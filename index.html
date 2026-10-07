@@ -151,7 +151,7 @@
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Marco interior dorado/morado
+        // Marco interior morado brillante
         ctx.strokeStyle = '#c084fc';
         ctx.lineWidth = 8;
         ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
@@ -369,35 +369,48 @@
 
 
     <!-- ========================================================================= -->
-    <!-- ZONA CURATORIAL: 9 LIENZOS ORGANIZADOS EN 3 GRUPOS (3 Obras por grupo)    -->
-    <!-- Para colocar una obra, pon el link directo en el atributo: src="TU_URL"    -->
-    <!-- Si dejas src="" aparecerá el lienzo en espera estilizado.                 -->
+    <!-- ZONA CURATORIAL: 9 LIENZOS ORGANIZADOS EN 3 GRUPOS (Doble cara garantizada) -->
     <!-- ========================================================================= -->
 
     <!-- ========================================================= -->
-    <!-- GRUPO 1: PARED IZQUIERDA (3 Obras)                        -->
+    <!-- GRUPO 1: PARED IZQUIERDA (3 Obras - Calibradas y unidas)  -->
     <!-- ========================================================= -->
 
-    <!-- OBRA 1 (Izquierda - Frente) -->
-    <a-entity position="-7.2 2.6 -11" rotation="0 90 0">
+    <!-- OBRA 1 (Izquierda) -->
+    <a-entity position="-7.48 2.6 -14.5" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+      <!-- Cara frontal -->
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 1; subtitulo: Grupo 1 - Izquierda; src: ;">
+      </a-plane>
+      <!-- Cara posterior -->
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 1; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 2 (Izquierda - Centro) -->
-    <a-entity position="-7.2 2.6 -16" rotation="0 90 0">
+    <a-entity position="-7.48 2.6 -17.6" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+      <!-- Cara frontal -->
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 2; subtitulo: Grupo 1 - Izquierda; src: ;">
+      </a-plane>
+      <!-- Cara posterior -->
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 2; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 3 (Izquierda - Fondo) -->
-    <a-entity position="-7.2 2.6 -21" rotation="0 90 0">
+    <!-- OBRA 3 (Izquierda) -->
+    <a-entity position="-7.48 2.6 -20.7" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+      <!-- Cara frontal -->
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 3; subtitulo: Grupo 1 - Izquierda; src: ;">
+      </a-plane>
+      <!-- Cara posterior -->
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 3; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
     </a-entity>
@@ -407,26 +420,35 @@
     <!-- GRUPO 2: PARED DERECHA (3 Obras)                          -->
     <!-- ========================================================= -->
 
-    <!-- OBRA 4 (Derecha - Frente) -->
-    <a-entity position="7.2 2.6 -11" rotation="0 -90 0">
+    <!-- OBRA 4 (Derecha) -->
+    <a-entity position="7.48 2.6 -14.5" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 4; subtitulo: Grupo 2 - Derecha; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 4; subtitulo: Grupo 2 - Derecha; src: ;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 5 (Derecha - Centro) -->
-    <a-entity position="7.2 2.6 -16" rotation="0 -90 0">
+    <a-entity position="7.48 2.6 -17.6" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 5; subtitulo: Grupo 2 - Derecha; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 5; subtitulo: Grupo 2 - Derecha; src: ;">
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 6 (Derecha - Fondo) -->
-    <a-entity position="7.2 2.6 -21" rotation="0 -90 0">
+    <!-- OBRA 6 (Derecha) -->
+    <a-entity position="7.48 2.6 -20.7" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 6; subtitulo: Grupo 2 - Derecha; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 6; subtitulo: Grupo 2 - Derecha; src: ;">
       </a-plane>
     </a-entity>
@@ -439,7 +461,10 @@
     <!-- OBRA 7 (Fondo - Izquierda) -->
     <a-entity position="-4.2 2.6 -23.8" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 7; subtitulo: Grupo 3 - Fondo; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 7; subtitulo: Grupo 3 - Fondo; src: ;">
       </a-plane>
     </a-entity>
@@ -447,7 +472,10 @@
     <!-- OBRA 8 (Fondo - Centro de Honor Principal) -->
     <a-entity position="0 2.8 -23.8" rotation="0 0 0">
       <a-box width="3.2" height="2.2" depth="0.10" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.06" width="3.05" height="2.05"
+      <a-plane position="0 0 0.055" width="3.05" height="2.05"
+               lienzo-obra="titulo: OBRA 8; subtitulo: Espacio Principal; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.055" rotation="0 180 0" width="3.05" height="2.05"
                lienzo-obra="titulo: OBRA 8; subtitulo: Espacio Principal; src: ;">
       </a-plane>
     </a-entity>
@@ -455,7 +483,10 @@
     <!-- OBRA 9 (Fondo - Derecha) -->
     <a-entity position="4.2 2.6 -23.8" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 9; subtitulo: Grupo 3 - Fondo; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 9; subtitulo: Grupo 3 - Fondo; src: ;">
       </a-plane>
     </a-entity>
