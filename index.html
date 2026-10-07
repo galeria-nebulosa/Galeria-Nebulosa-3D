@@ -25,25 +25,25 @@
       cursor: -webkit-grabbing !important;
     }
 
-    /* PANEL DE INSTRUCCIONES VERTICAL DERECHO */
+    /* PANEL DE INSTRUCCIONES Y MOVIMIENTO VERTICAL DERECHO */
     #nav-guide {
-      position: absolute;
+      position: fixed;
       top: 50%;
       right: 20px;
       transform: translateY(-50%);
-      background: rgba(14, 14, 20, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(14, 14, 20, 0.90);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 16px;
       padding: 20px 14px;
       color: #ffffff;
       font-family: 'Poppins', sans-serif;
-      z-index: 1000;
-      box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+      z-index: 9999999 !important;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.6);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       user-select: none;
       cursor: default !important;
     }
@@ -67,8 +67,8 @@
       gap: 5px;
     }
     .key-cap {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       background: #252535;
       border: 1px solid #404058;
       border-bottom: 3px solid #161622;
@@ -76,10 +76,20 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
       font-family: 'Poppins', sans-serif;
       color: #f5f5fa;
+      cursor: pointer !important;
+      transition: all 0.1s ease;
+    }
+    .key-cap:hover {
+      background: #3b3b54;
+      border-color: #6366f1;
+    }
+    .key-cap:active {
+      transform: translateY(2px);
+      border-bottom-width: 1px;
     }
 
     .guide-item {
@@ -130,55 +140,59 @@
       transform: scale(1.04);
     }
 
-    /* ESTILOS DE FLECHAS Y GUARDADO PARA EL EDITOR 3D */
-    .inspector-toggle-btn {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      background: #7c3aed;
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 6px;
-      width: 24px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 1000000;
-      font-size: 13px;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-      transition: all 0.2s ease;
-      user-select: none;
+    /* PESTAÑAS FLOTANTES DE FLECHAS PARA MINIMIZAR PANELES */
+    .toggle-panel-btn {
+      position: fixed !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      background: #7c3aed !important;
+      color: #ffffff !important;
+      border: 2px solid rgba(255, 255, 255, 0.5) !important;
+      border-radius: 8px !important;
+      width: 28px !important;
+      height: 54px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      z-index: 99999999 !important;
+      font-size: 16px !important;
+      font-weight: 900 !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6) !important;
+      transition: left 0.2s ease, right 0.2s ease, transform 0.15s ease !important;
+      user-select: none !important;
     }
-    .inspector-toggle-btn:hover {
-      background: #9333ea;
-      transform: translateY(-50%) scale(1.1);
+    .toggle-panel-btn:hover {
+      background: #9333ea !important;
+      transform: translateY(-50%) scale(1.08) !important;
     }
-    #toggle-inspector-left { left: 300px; }
-    #toggle-inspector-right { right: 300px; }
 
-    #btn-guardar-inspector {
-      position: fixed;
-      top: 10px;
-      left: 170px;
-      background: #10b981;
-      color: #ffffff;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 14px;
-      font-size: 12px;
-      font-weight: 700;
-      font-family: 'Poppins', sans-serif;
-      cursor: pointer;
-      z-index: 1000000;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-      transition: all 0.2s ease;
+    /* BOTÓN SUPERIOR DE GUARDADO */
+    #custom-save-bar {
+      position: fixed !important;
+      top: 6px !important;
+      left: 175px !important;
+      z-index: 99999999 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
     }
-    #btn-guardar-inspector:hover {
-      background: #059669;
-      transform: scale(1.05);
+    .btn-guardar-real {
+      background: #10b981 !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 6px !important;
+      padding: 8px 16px !important;
+      font-size: 12px !important;
+      font-weight: 700 !important;
+      font-family: 'Poppins', sans-serif !important;
+      cursor: pointer !important;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5) !important;
+      transition: all 0.2s ease !important;
+    }
+    .btn-guardar-real:hover {
+      background: #059669 !important;
+      transform: scale(1.04) !important;
     }
   </style>
 
@@ -192,70 +206,119 @@
       }
     }
 
-    // CONTROLADOR DE MINIMIZADO Y GUARDADO PARA EL EDITOR
+    // NAVEGACIÓN DESDE LOS BOTONES EN PANTALLA
+    function moverConBoton(tecla) {
+      const cameraRig = document.querySelector('#rig');
+      if (!cameraRig) return;
+      const rot = cameraRig.getAttribute('rotation') || { y: 0 };
+      const rad = THREE.MathUtils.degToRad(rot.y);
+      const paso = 0.6;
+      let dx = 0, dz = 0;
+
+      if (tecla === 'ArrowUp' || tecla === 'w') {
+        dx = -Math.sin(rad) * paso;
+        dz = -Math.cos(rad) * paso;
+      } else if (tecla === 'ArrowDown' || tecla === 's') {
+        dx = Math.sin(rad) * paso;
+        dz = Math.cos(rad) * paso;
+      } else if (tecla === 'ArrowLeft' || tecla === 'a') {
+        dx = -Math.cos(rad) * paso;
+        dz = Math.sin(rad) * paso;
+      } else if (tecla === 'ArrowRight' || tecla === 'd') {
+        dx = Math.cos(rad) * paso;
+        dz = -Math.sin(rad) * paso;
+      }
+
+      const p = cameraRig.getAttribute('position');
+      cameraRig.setAttribute('position', { x: p.x + dx, y: p.y, z: p.z + dz });
+
+      // Simular evento de teclado para compatibilidad con el editor
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: tecla, code: tecla, bubbles: true }));
+    }
+
+    // INYECTOR INTELIGENTE PARA LOS CONTROLES DEL EDITOR 3D
     setInterval(() => {
-      const leftSide = document.querySelector('.scenetree, #scenetree');
-      const rightSide = document.querySelector('.sidebar, #sidebar');
+      // 1. Detectar si el editor de A-Frame está abierto
+      const leftSidebar = document.querySelector('.scenetree, [class*="scenetree"], .sidebar:first-of-type');
+      const rightSidebar = document.querySelector('.sidebar:last-of-type, [class*="Sidebar"]');
+      const inspectorActivo = document.querySelector('#aframe-inspector, .a-inspector');
 
-      if ((leftSide || rightSide) && !document.getElementById('btn-guardar-inspector')) {
-        // 1. Botón Guardar Cambios
-        const btnSave = document.createElement('button');
-        btnSave.id = 'btn-guardar-inspector';
-        btnSave.innerHTML = '💾 Guardar Cambios';
-        btnSave.title = 'Descarga el index.html con las posiciones actualizadas';
-        btnSave.onclick = () => {
-          // Actualizar atributos de posición actuales en el DOM
-          ['obra-4', 'obra-5', 'obra-6'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-              const pos = el.getAttribute('position');
-              el.setAttribute('position', `${pos.x.toFixed(2)} ${pos.y.toFixed(2)} ${pos.z.toFixed(2)}`);
-            }
-          });
-          const fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-          const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = 'index.html';
-          a.click();
-          btnSave.innerHTML = '✅ ¡Guardado!';
-          setTimeout(() => { btnSave.innerHTML = '💾 Guardar Cambios'; }, 2000);
-        };
-        document.body.appendChild(btnSave);
+      if (leftSidebar || rightSidebar || inspectorActivo) {
+        // Inyectar botón de guardado funcional
+        if (!document.getElementById('custom-save-bar')) {
+          const bar = document.createElement('div');
+          bar.id = 'custom-save-bar';
+          bar.innerHTML = `<button class="btn-guardar-real" onclick="guardarHtmlActualizado()">💾 GUARDAR CAMBIOS</button>`;
+          document.body.appendChild(bar);
+        }
 
-        // 2. Flecha Minimizar Panel Izquierdo
-        if (leftSide) {
+        // Inyectar flechita para minimizar panel izquierdo
+        if (leftSidebar && !document.getElementById('btn-min-left')) {
           const btnL = document.createElement('div');
-          btnL.id = 'toggle-inspector-left';
-          btnL.className = 'inspector-toggle-btn';
+          btnL.id = 'btn-min-left';
+          btnL.className = 'toggle-panel-btn';
+          btnL.style.left = '300px';
           btnL.innerHTML = '◀';
-          let minL = false;
+          let ocultoL = false;
           btnL.onclick = () => {
-            minL = !minL;
-            leftSide.style.display = minL ? 'none' : '';
-            btnL.style.left = minL ? '0px' : '300px';
-            btnL.innerHTML = minL ? '▶' : '◀';
+            ocultoL = !ocultoL;
+            leftSidebar.style.setProperty('display', ocultoL ? 'none' : 'block', 'important');
+            btnL.style.left = ocultoL ? '4px' : '300px';
+            btnL.innerHTML = ocultoL ? '▶' : '◀';
           };
           document.body.appendChild(btnL);
         }
 
-        // 3. Flecha Minimizar Panel Derecho
-        if (rightSide) {
+        // Inyectar flechita para minimizar panel derecho
+        if (rightSidebar && !document.getElementById('btn-min-right')) {
           const btnR = document.createElement('div');
-          btnR.id = 'toggle-inspector-right';
-          btnR.className = 'inspector-toggle-btn';
+          btnR.id = 'btn-min-right';
+          btnR.className = 'toggle-panel-btn';
+          btnR.style.right = '300px';
           btnR.innerHTML = '▶';
-          let minR = false;
+          let ocultoR = false;
           btnR.onclick = () => {
-            minR = !minR;
-            rightSide.style.display = minR ? 'none' : '';
-            btnR.style.right = minR ? '0px' : '300px';
-            btnR.innerHTML = minR ? '◀' : '▶';
+            ocultoR = !ocultoR;
+            rightSidebar.style.setProperty('display', ocultoR ? 'none' : 'block', 'important');
+            btnR.style.right = ocultoR ? '4px' : '300px';
+            btnR.innerHTML = ocultoR ? '◀' : '▶';
           };
           document.body.appendChild(btnR);
         }
       }
-    }, 1000);
+    }, 800);
+
+    // FUNCIÓN DE DESCARGA DIRECTA DE INDEX.HTML SIN DEPENDER DE SERVIDORES
+    function guardarHtmlActualizado() {
+      // 1. Tomar posiciones actuales editadas en tiempo real
+      ['obra-4', 'obra-5', 'obra-6'].forEach(id => {
+        const entidad = document.getElementById(id);
+        if (entidad) {
+          const p = entidad.getAttribute('position');
+          if (p) {
+            entidad.setAttribute('position', `${p.x.toFixed(2)} ${p.y.toFixed(2)} ${p.z.toFixed(2)}`);
+          }
+        }
+      });
+
+      // 2. Limpiar elementos temporales de la inyección antes de guardar
+      const saveBar = document.getElementById('custom-save-bar');
+      const minL = document.getElementById('btn-min-left');
+      const minR = document.getElementById('btn-min-right');
+      if (saveBar) saveBar.remove();
+      if (minL) minL.remove();
+      if (minR) minR.remove();
+
+      // 3. Generar archivo limpio y descargarlo
+      const htmlCompleto = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlCompleto], { type: 'text/html;charset=utf-8' });
+      const enlace = document.createElement('a');
+      enlace.href = URL.createObjectURL(blob);
+      enlace.download = 'index.html';
+      enlace.click();
+
+      alert("✅ ¡Archivo index.html descargado con éxito!\n\nSolo reemplázalo en tu repositorio de GitHub para guardar los cambios de forma definitiva.");
+    }
 
     // Generador robusto de lienzos para obras de arte (compatibilidad garantizada)
     AFRAME.registerComponent('lienzo-obra', {
@@ -533,19 +596,19 @@
 </head>
 <body style="margin: 0; overflow: hidden; background-color: #000;">
 
-  <!-- GUÍA DE NAVEGACIÓN VERTICAL -->
+  <!-- GUÍA DE NAVEGACIÓN Y BOTONES DE MOVIMIENTO EN PANTALLA -->
   <div id="nav-guide">
     <div class="guide-title">Navegación</div>
     
     <div class="arrow-pad">
-      <div class="key-cap">↑</div>
+      <div class="key-cap" onclick="moverConBoton('ArrowUp')">↑</div>
       <div class="arrow-row">
-        <div class="key-cap">←</div>
-        <div class="key-cap">↓</div>
-        <div class="key-cap">→</div>
+        <div class="key-cap" onclick="moverConBoton('ArrowLeft')">←</div>
+        <div class="key-cap" onclick="moverConBoton('ArrowDown')">↓</div>
+        <div class="key-cap" onclick="moverConBoton('ArrowRight')">→</div>
       </div>
     </div>
-    <span style="font-size: 10px; color: #9c9cb8;">Caminar (o WASD)</span>
+    <span style="font-size: 10px; color: #9c9cb8;">Clic flechas o WASD</span>
 
     <div style="width: 80%; height: 1px; background: rgba(255,255,255,0.15);"></div>
 
