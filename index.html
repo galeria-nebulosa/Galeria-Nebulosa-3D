@@ -101,6 +101,73 @@
   </style>
 
   <script>
+    // Componente para generar texturas de lienzos garantizadas (sin errores CORS)
+    AFRAME.registerComponent('lienzo-placeholder', {
+      schema: {
+        titulo: { type: 'string', default: 'OBRA DISPONIBLE' },
+        subtitulo: { type: 'string', default: 'Espacio Galería Nebulosa' },
+        colorFondo: { type: 'string', default: '#1a1429' },
+        src: { type: 'string', default: '' }
+      },
+      init: function () {
+        const el = this.el;
+        const data = this.data;
+
+        // Si se especificó una imagen externa o local, cárgala directamente
+        if (data.src && data.src.trim() !== '') {
+          const loader = new THREE.TextureLoader();
+          loader.setCrossOrigin('anonymous');
+          loader.load(data.src, function (texture) {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            const mat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.FrontSide });
+            const mesh = el.getObject3D('mesh');
+            if (mesh) mesh.material = mat;
+          }, undefined, function (err) {
+            console.warn("No se pudo cargar la imagen:", data.src);
+          });
+          return;
+        }
+
+        // Si no hay imagen, dibuja un lienzo institucional de alta definición
+        document.fonts.ready.then(() => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 1024;
+          canvas.height = 768;
+          const ctx = canvas.getContext('2d');
+
+          // Degradado de fondo
+          const grad = ctx.createLinearGradient(0, 0, 1024, 768);
+          grad.addColorStop(0, '#231438');
+          grad.addColorStop(1, '#0e0b17');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Borde interior fino
+          ctx.strokeStyle = '#a855f7';
+          ctx.lineWidth = 10;
+          ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+
+          // Título del Lienzo
+          ctx.font = "bold 64px 'Poppins', sans-serif";
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(data.titulo, canvas.width / 2, canvas.height / 2 - 30);
+
+          // Subtítulo
+          ctx.font = "500 32px 'Poppins', sans-serif";
+          ctx.fillStyle = "#c084fc";
+          ctx.fillText(data.subtitulo, canvas.width / 2, canvas.height / 2 + 50);
+
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.colorSpace = THREE.SRGBColorSpace;
+          const mat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.FrontSide });
+          const mesh = el.getObject3D('mesh');
+          if (mesh) mesh.material = mat;
+        });
+      }
+    });
+
     // Optimización de materiales y remoción física total de plantas
     AFRAME.registerComponent('enhancer', {
       init: function () {
@@ -186,16 +253,13 @@
           canvas.height = 256;
           const ctx = canvas.getContext('2d');
 
-          // Fondo cristal oscuro uniforme
           ctx.fillStyle = "rgba(18, 16, 30, 0.95)";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Borde fino decorativo
           ctx.strokeStyle = "rgba(230, 220, 255, 0.35)";
           ctx.lineWidth = 6;
           ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
-          // Texto en Poppins
           ctx.font = "600 48px 'Poppins', sans-serif";
           ctx.fillStyle = "#ffffff";
           ctx.textAlign = "center";
@@ -289,59 +353,56 @@
     <a-entity light="type: directional; color: #ffffff; intensity: 1.4;" position="0 25 -16"></a-entity>
 
     <!-- CONOS DE LUZ CÁLIDA SOBRE LAS PAREDES -->
-    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="-9 8.3 -16" rotation="-65 -90 0"></a-entity>
-    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="9 8.3 -16" rotation="-65 90 0"></a-entity>
-    <a-entity light="type: spot; color: #fff1d6; intensity: 6.5; angle: 52; penumbra: 0.7; distance: 35;" position="0 8.5 -25" rotation="-55 0 0"></a-entity>
-    <a-entity light="type: spot; color: #fff1d6; intensity: 5.5; angle: 52; penumbra: 0.7; distance: 28;" position="0 8.5 -7" rotation="-55 180 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="-7 7.5 -16" rotation="-65 -90 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="7 7.5 -16" rotation="-65 90 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 6.5; angle: 52; penumbra: 0.7; distance: 35;" position="0 8.0 -22" rotation="-55 0 0"></a-entity>
 
     <!-- MODELO 3D DE LA SALA -->
     <a-entity gltf-model="#modelo-sala" enhancer position="0 0 0"></a-entity>
 
-    <!-- RÓTULO EXTERIOR: Orientación correcta, desplazado a la izquierda y montado en el muro -->
+    <!-- RÓTULO EXTERIOR -->
     <a-plane position="-2.2 2.2 -1.28" rotation="0 0 0" width="3.6" height="0.9" rotulo-poppins></a-plane>
 
 
     <!-- ========================================================================= -->
     <!-- ZONA CURATORIAL: 9 LIENZOS ORGANIZADOS EN 3 GRUPOS                        -->
-    <!-- INSTRUCCIÓN: Para mostrar una obra, solo reemplaza el texto dentro de     -->
-    <!-- src="..." con la URL de tu imagen de WordPress o el archivo de GitHub.    -->
+    <!-- INSTRUCCIÓN: Para poner una imagen de WordPress o GitHub, busca el lienzo -->
+    <!-- y coloca el enlace dentro del parámetro: src="AQUÍ_TU_ENLACE"              -->
+    <!-- Si dejas src="" aparecerá el lienzo en espera elegante por defecto.       -->
     <!-- ========================================================================= -->
 
     <!-- ========================================================= -->
     <!-- GRUPO 1: PARED IZQUIERDA (3 Obras)                        -->
     <!-- ========================================================= -->
 
-    <!-- LIENZO 1 (Izquierda - Sector Entrada) -->
-    <a-entity position="-11.85 2.8 -10" rotation="0 90 0">
-      <!-- Marco Negro Galería -->
-      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
-      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
-      <a-image position="0 0 0.02" width="2.8" height="2.0" 
-               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+1"
-               material="roughness: 0.4;">
-      </a-image>
+    <!-- LIENZO 1 (Izquierda - Entrada) -->
+    <a-entity position="-7.8 2.6 -11" rotation="0 90 0">
+      <!-- Marco Galería -->
+      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
+      <!-- Lienzo -->
+      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
+               lienzo-placeholder="titulo: OBRA 1; subtitulo: Grupo 1 - Izquierda; src: ;">
+      </a-plane>
     </a-entity>
 
-    <!-- LIENZO 2 (Izquierda - Sector Centro) -->
-    <a-entity position="-11.85 2.8 -16" rotation="0 90 0">
-      <!-- Marco Negro Galería -->
-      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
-      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
-      <a-image position="0 0 0.02" width="2.8" height="2.0" 
-               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+2"
-               material="roughness: 0.4;">
-      </a-image>
+    <!-- LIENZO 2 (Izquierda - Centro) -->
+    <a-entity position="-7.8 2.6 -16" rotation="0 90 0">
+      <!-- Marco Galería -->
+      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
+      <!-- Lienzo -->
+      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
+               lienzo-placeholder="titulo: OBRA 2; subtitulo: Grupo 1 - Izquierda; src: ;">
+      </a-plane>
     </a-entity>
 
-    <!-- LIENZO 3 (Izquierda - Sector Fondo) -->
-    <a-entity position="-11.85 2.8 -22" rotation="0 90 0">
-      <!-- Marco Negro Galería -->
-      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
-      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
-      <a-image position="0 0 0.02" width="2.8" height="2.0" 
-               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+3"
-               material="roughness: 0.4;">
-      </a-image>
+    <!-- LIENZO 3 (Izquierda - Fondo) -->
+    <a-entity position="-7.8 2.6 -21" rotation="0 90 0">
+      <!-- Marco Galería -->
+      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
+      <!-- Lienzo -->
+      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
+               lienzo-placeholder="titulo: OBRA 3; subtitulo: Grupo 1 - Izquierda; src: ;">
+      </a-plane>
     </a-entity>
 
 
@@ -349,75 +410,69 @@
     <!-- GRUPO 2: PARED DERECHA (3 Obras)                          -->
     <!-- ========================================================= -->
 
-    <!-- LIENZO 4 (Derecha - Sector Entrada) -->
-    <a-entity position="11.85 2.8 -10" rotation="0 -90 0">
-      <!-- Marco Negro Galería -->
-      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
-      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
-      <a-image position="0 0 0.02" width="2.8" height="2.0" 
-               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+4"
-               material="roughness: 0.4;">
-      </a-image>
+    <!-- LIENZO 4 (Derecha - Entrada) -->
+    <a-entity position="7.8 2.6 -11" rotation="0 -90 0">
+      <!-- Marco Galería -->
+      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
+      <!-- Lienzo -->
+      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
+               lienzo-placeholder="titulo: OBRA 4; subtitulo: Grupo 2 - Derecha; src: ;">
+      </a-plane>
     </a-entity>
 
-    <!-- LIENZO 5 (Derecha - Sector Centro) -->
-    <a-entity position="11.85 2.8 -16" rotation="0 -90 0">
-      <!-- Marco Negro Galería -->
-      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
-      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
-      <a-image position="0 0 0.02" width="2.8" height="2.0" 
-               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+5"
-               material="roughness: 0.4;">
-      </a-image>
+    <!-- LIENZO 5 (Derecha - Centro) -->
+    <a-entity position="7.8 2.6 -16" rotation="0 -90 0">
+      <!-- Marco Galería -->
+      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
+      <!-- Lienzo -->
+      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
+               lienzo-placeholder="titulo: OBRA 5; subtitulo: Grupo 2 - Derecha; src: ;">
+      </a-plane>
     </a-entity>
 
-    <!-- LIENZO 6 (Derecha - Sector Fondo) -->
-    <a-entity position="11.85 2.8 -22" rotation="0 -90 0">
-      <!-- Marco Negro Galería -->
-      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
-      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
-      <a-image position="0 0 0.02" width="2.8" height="2.0" 
-               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+6"
-               material="roughness: 0.4;">
-      </a-image>
+    <!-- LIENZO 6 (Derecha - Fondo) -->
+    <a-entity position="7.8 2.6 -21" rotation="0 -90 0">
+      <!-- Marco Galería -->
+      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
+      <!-- Lienzo -->
+      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
+               lienzo-placeholder="titulo: OBRA 6; subtitulo: Grupo 2 - Derecha; src: ;">
+      </a-plane>
     </a-entity>
 
 
     <!-- ========================================================= -->
-    <!-- GRUPO 3: PARED DEL FONDO (3 Obras Principales)            -->
+    <!-- GRUPO 3: PARED DE FONDO (3 Obras)                         -->
     <!-- ========================================================= -->
 
-    <!-- LIENZO 7 (Fondo - Lateral Izquierdo) -->
-    <a-entity position="-6.0 2.8 -27.85" rotation="0 0 0">
-      <!-- Marco Negro Galería -->
-      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
-      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
-      <a-image position="0 0 0.02" width="2.8" height="2.0" 
-               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+7"
-               material="roughness: 0.4;">
-      </a-image>
+    <!-- LIENZO 7 (Fondo - Izquierda) -->
+    <a-entity position="-4.5 2.6 -24.8" rotation="0 0 0">
+      <!-- Marco Galería -->
+      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
+      <!-- Lienzo -->
+      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
+               lienzo-placeholder="titulo: OBRA 7; subtitulo: Grupo 3 - Fondo; src: ;">
+      </a-plane>
     </a-entity>
 
-    <!-- LIENZO 8 (Fondo - Centro de Honor) -->
-    <a-entity position="0 3.0 -27.85" rotation="0 0 0">
-      <!-- Marco Negro Galería Destacado -->
-      <a-plane width="3.8" height="2.6" color="#0c0c10" material="roughness: 0.9;"></a-plane>
-      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
-      <a-image position="0 0 0.02" width="3.6" height="2.4" 
-               src="https://placehold.co/1400x900/1e172f/ffffff?text=Lienzo+8+(Principal)"
-               material="roughness: 0.4;">
-      </a-image>
+    <!-- LIENZO 8 (Fondo - Centro de Honor Principal) -->
+    <a-entity position="0 2.8 -24.8" rotation="0 0 0">
+      <!-- Marco Galería Principal -->
+      <a-plane width="3.4" height="2.3" color="#0c0b12"></a-plane>
+      <!-- Lienzo -->
+      <a-plane position="0 0 0.02" width="3.2" height="2.1" 
+               lienzo-placeholder="titulo: OBRA 8; subtitulo: Obra Principal; src: ;">
+      </a-plane>
     </a-entity>
 
-    <!-- LIENZO 9 (Fondo - Lateral Derecho) -->
-    <a-entity position="6.0 2.8 -27.85" rotation="0 0 0">
-      <!-- Marco Negro Galería -->
-      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
-      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
-      <a-image position="0 0 0.02" width="2.8" height="2.0" 
-               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+9"
-               material="roughness: 0.4;">
-      </a-image>
+    <!-- LIENZO 9 (Fondo - Derecha) -->
+    <a-entity position="4.5 2.6 -24.8" rotation="0 0 0">
+      <!-- Marco Galería -->
+      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
+      <!-- Lienzo -->
+      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
+               lienzo-placeholder="titulo: OBRA 9; subtitulo: Grupo 3 - Fondo; src: ;">
+      </a-plane>
     </a-entity>
 
 
