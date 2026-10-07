@@ -172,10 +172,10 @@
       }
     });
 
-    // Cuadro vertical de oro para los Ganadores de los Primeros Lugares
+    // Cuadro vertical de oro para los Ganadores del Primer Lugar
     AFRAME.registerComponent('cuadro-ganador', {
       schema: {
-        titulo: { type: 'string', default: 'GANADORES DE LOS PRIMEROS LUGARES' },
+        titulo: { type: 'string', default: 'GANADORES DEL PRIMER LUGAR' },
         nombre: { type: 'string', default: 'Artistas Galardonados' }
       },
       init: function () {
@@ -467,17 +467,17 @@
     <!-- GRUPO 1: PARED IZQUIERDA (Cuadro de Honor + 3 Obras calibradas en X=-9.75)-->
     <!-- ========================================================================= -->
 
-    <!-- CUADRO DE HONOR VERTICAL: GANADORES DE LOS PRIMEROS LUGARES -->
+    <!-- CUADRO DE HONOR VERTICAL: GANADORES DEL PRIMER LUGAR -->
     <!-- Modifica el parámetro: nombre: 'Texto o Nombre Deseado' -->
-    <a-entity position="-9.70 1.95 -15.65" rotation="0 90 0">
+    <a-entity position="-9.70 1.95 -15.55" rotation="0 90 0">
       <a-box width="1.20" height="1.80" depth="0.08" color="#261338" material="roughness: 0.25; metalness: 0.5"></a-box>
       <!-- Cara frontal -->
       <a-plane position="0 0 0.045" width="1.10" height="1.70"
-               cuadro-ganador="titulo: GANADORES DE LOS PRIMEROS LUGARES; nombre: Artistas Galardonados;">
+               cuadro-ganador="titulo: GANADORES DEL PRIMER LUGAR; nombre: Artistas Galardonados;">
       </a-plane>
       <!-- Cara posterior -->
       <a-plane position="0 0 -0.045" rotation="0 180 0" width="1.10" height="1.70"
-               cuadro-ganador="titulo: GANADORES DE LOS PRIMEROS LUGARES; nombre: Artistas Galardonados;">
+               cuadro-ganador="titulo: GANADORES DEL PRIMER LUGAR; nombre: Artistas Galardonados;">
       </a-plane>
     </a-entity>
 
