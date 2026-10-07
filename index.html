@@ -129,6 +129,57 @@
       background: linear-gradient(135deg, #6d28d9, #9333ea);
       transform: scale(1.04);
     }
+
+    /* ESTILOS DE FLECHAS Y GUARDADO PARA EL EDITOR 3D */
+    .inspector-toggle-btn {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #7c3aed;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 6px;
+      width: 24px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1000000;
+      font-size: 13px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .inspector-toggle-btn:hover {
+      background: #9333ea;
+      transform: translateY(-50%) scale(1.1);
+    }
+    #toggle-inspector-left { left: 300px; }
+    #toggle-inspector-right { right: 300px; }
+
+    #btn-guardar-inspector {
+      position: fixed;
+      top: 10px;
+      left: 170px;
+      background: #10b981;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      z-index: 1000000;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s ease;
+    }
+    #btn-guardar-inspector:hover {
+      background: #059669;
+      transform: scale(1.05);
+    }
   </style>
 
   <script>
@@ -140,6 +191,71 @@
         window.postMessage('INJECT_AFRAME_INSPECTOR', '*');
       }
     }
+
+    // CONTROLADOR DE MINIMIZADO Y GUARDADO PARA EL EDITOR
+    setInterval(() => {
+      const leftSide = document.querySelector('.scenetree, #scenetree');
+      const rightSide = document.querySelector('.sidebar, #sidebar');
+
+      if ((leftSide || rightSide) && !document.getElementById('btn-guardar-inspector')) {
+        // 1. Botón Guardar Cambios
+        const btnSave = document.createElement('button');
+        btnSave.id = 'btn-guardar-inspector';
+        btnSave.innerHTML = '💾 Guardar Cambios';
+        btnSave.title = 'Descarga el index.html con las posiciones actualizadas';
+        btnSave.onclick = () => {
+          // Actualizar atributos de posición actuales en el DOM
+          ['obra-4', 'obra-5', 'obra-6'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+              const pos = el.getAttribute('position');
+              el.setAttribute('position', `${pos.x.toFixed(2)} ${pos.y.toFixed(2)} ${pos.z.toFixed(2)}`);
+            }
+          });
+          const fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+          const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'index.html';
+          a.click();
+          btnSave.innerHTML = '✅ ¡Guardado!';
+          setTimeout(() => { btnSave.innerHTML = '💾 Guardar Cambios'; }, 2000);
+        };
+        document.body.appendChild(btnSave);
+
+        // 2. Flecha Minimizar Panel Izquierdo
+        if (leftSide) {
+          const btnL = document.createElement('div');
+          btnL.id = 'toggle-inspector-left';
+          btnL.className = 'inspector-toggle-btn';
+          btnL.innerHTML = '◀';
+          let minL = false;
+          btnL.onclick = () => {
+            minL = !minL;
+            leftSide.style.display = minL ? 'none' : '';
+            btnL.style.left = minL ? '0px' : '300px';
+            btnL.innerHTML = minL ? '▶' : '◀';
+          };
+          document.body.appendChild(btnL);
+        }
+
+        // 3. Flecha Minimizar Panel Derecho
+        if (rightSide) {
+          const btnR = document.createElement('div');
+          btnR.id = 'toggle-inspector-right';
+          btnR.className = 'inspector-toggle-btn';
+          btnR.innerHTML = '▶';
+          let minR = false;
+          btnR.onclick = () => {
+            minR = !minR;
+            rightSide.style.display = minR ? 'none' : '';
+            btnR.style.right = minR ? '0px' : '300px';
+            btnR.innerHTML = minR ? '◀' : '▶';
+          };
+          document.body.appendChild(btnR);
+        }
+      }
+    }, 1000);
 
     // Generador robusto de lienzos para obras de arte (compatibilidad garantizada)
     AFRAME.registerComponent('lienzo-obra', {
