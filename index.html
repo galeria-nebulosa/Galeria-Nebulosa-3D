@@ -90,7 +90,7 @@
     .mouse-icon::after {
       content: '';
       position: absolute;
-      top: 50%;
+      top: 5px;
       left: 50%;
       transform: translateX(-50%);
       width: 2px;
@@ -101,70 +101,74 @@
   </style>
 
   <script>
-    // Componente para generar texturas de lienzos garantizadas (sin errores CORS)
-    AFRAME.registerComponent('lienzo-placeholder', {
+    // Generador robusto de lienzos para obras de arte (compatibilidad garantizada)
+    AFRAME.registerComponent('lienzo-obra', {
       schema: {
         titulo: { type: 'string', default: 'OBRA DISPONIBLE' },
-        subtitulo: { type: 'string', default: 'Espacio Galería Nebulosa' },
-        colorFondo: { type: 'string', default: '#1a1429' },
+        subtitulo: { type: 'string', default: 'Galería Nebulosa' },
         src: { type: 'string', default: '' }
       },
       init: function () {
         const el = this.el;
         const data = this.data;
 
-        // Si se especificó una imagen externa o local, cárgala directamente
+        const aplicarTextura = (texture) => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          const mesh = el.getObject3D('mesh');
+          if (mesh) {
+            mesh.material = new THREE.MeshBasicMaterial({ 
+              map: texture, 
+              side: THREE.DoubleSide 
+            });
+            mesh.material.needsUpdate = true;
+          }
+        };
+
+        // Si se provee una imagen externa/local (ej. de WordPress o GitHub)
         if (data.src && data.src.trim() !== '') {
           const loader = new THREE.TextureLoader();
           loader.setCrossOrigin('anonymous');
-          loader.load(data.src, function (texture) {
-            texture.colorSpace = THREE.SRGBColorSpace;
-            const mat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.FrontSide });
-            const mesh = el.getObject3D('mesh');
-            if (mesh) mesh.material = mat;
-          }, undefined, function (err) {
-            console.warn("No se pudo cargar la imagen:", data.src);
-          });
+          loader.load(
+            data.src,
+            function (tex) { aplicarTextura(tex); },
+            undefined,
+            function () { console.warn("Error cargando imagen: " + data.src); }
+          );
           return;
         }
 
-        // Si no hay imagen, dibuja un lienzo institucional de alta definición
-        document.fonts.ready.then(() => {
-          const canvas = document.createElement('canvas');
-          canvas.width = 1024;
-          canvas.height = 768;
-          const ctx = canvas.getContext('2d');
+        // Si no hay imagen aún, generamos un lienzo en espera estilizado en alta resolución
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 720;
+        const ctx = canvas.getContext('2d');
 
-          // Degradado de fondo
-          const grad = ctx.createLinearGradient(0, 0, 1024, 768);
-          grad.addColorStop(0, '#231438');
-          grad.addColorStop(1, '#0e0b17');
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Fondo degradado cósmico sobrio
+        const grad = ctx.createLinearGradient(0, 0, 1024, 720);
+        grad.addColorStop(0, '#221538');
+        grad.addColorStop(0.5, '#161026');
+        grad.addColorStop(1, '#0c0a15');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Borde interior fino
-          ctx.strokeStyle = '#a855f7';
-          ctx.lineWidth = 10;
-          ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+        // Marco interior dorado/morado
+        ctx.strokeStyle = '#c084fc';
+        ctx.lineWidth = 8;
+        ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
 
-          // Título del Lienzo
-          ctx.font = "bold 64px 'Poppins', sans-serif";
-          ctx.fillStyle = "#ffffff";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(data.titulo, canvas.width / 2, canvas.height / 2 - 30);
+        // Textos del lienzo
+        ctx.fillStyle = '#ffffff';
+        ctx.font = "bold 52px 'Poppins', sans-serif";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(data.titulo, canvas.width / 2, canvas.height / 2 - 35);
 
-          // Subtítulo
-          ctx.font = "500 32px 'Poppins', sans-serif";
-          ctx.fillStyle = "#c084fc";
-          ctx.fillText(data.subtitulo, canvas.width / 2, canvas.height / 2 + 50);
+        ctx.fillStyle = '#e9d5ff';
+        ctx.font = "400 30px 'Poppins', sans-serif";
+        ctx.fillText(data.subtitulo, canvas.width / 2, canvas.height / 2 + 45);
 
-          const texture = new THREE.CanvasTexture(canvas);
-          texture.colorSpace = THREE.SRGBColorSpace;
-          const mat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.FrontSide });
-          const mesh = el.getObject3D('mesh');
-          if (mesh) mesh.material = mat;
-        });
+        const texture = new THREE.CanvasTexture(canvas);
+        aplicarTextura(texture);
       }
     });
 
@@ -182,7 +186,7 @@
             const objName = node.name ? node.name.toLowerCase() : "";
             const combined = objName + " " + matName;
 
-            // Detección exhaustiva de vegetación y macetas
+            // Detección de vegetación y macetas
             const esVegetacion = combined.includes('plant') || combined.includes('leaf') || 
                                  combined.includes('leaves') || combined.includes('hoja') || 
                                  combined.includes('pot') || combined.includes('maceta') || 
@@ -212,18 +216,18 @@
                 node.material.metalness = 0.15;
                 node.material.depthWrite = false;
               } 
-              // Focos del techo: emisores encendidos
+              // Focos del techo
               else if (combined.includes('light') || combined.includes('foco') || combined.includes('lamp') || combined.includes('spot') || combined.includes('bulb')) {
                 node.material.emissive = new THREE.Color(0xffeedd);
                 node.material.emissiveIntensity = 4.0;
               } 
-              // Suelo de mármol: preserva la textura con tinte claro
+              // Suelo de mármol
               else if (combined.includes('floor') || combined.includes('suelo') || combined.includes('piso')) {
                 node.material.color = new THREE.Color(0xd0d4de);
                 node.material.roughness = 0.25;
                 node.material.metalness = 0.08;
               } 
-              // Paredes: morado original de Blender
+              // Paredes moradas
               else if (combined.includes('wall') || combined.includes('pared') || combined.includes('muro')) {
                 node.material.color = new THREE.Color(0x584b70);
                 node.material.roughness = 0.88;
@@ -233,7 +237,7 @@
             }
           });
 
-          // Eliminación física definitiva de la jerarquía 3D
+          // Eliminación física
           objetosParaEliminar.forEach((obj) => {
             obj.visible = false;
             obj.scale.set(0, 0, 0);
@@ -244,7 +248,7 @@
       }
     });
 
-    // Rótulo Poppins con orientación de lectura natural y doble cara
+    // Rótulo exterior Poppins
     AFRAME.registerComponent('rotulo-poppins', {
       init: function () {
         document.fonts.ready.then(() => {
@@ -270,7 +274,7 @@
           const mat = new THREE.MeshBasicMaterial({ 
             map: texture, 
             transparent: true, 
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide 
           });
           const mesh = this.el.getObject3D('mesh');
           if (mesh) mesh.material = mat;
@@ -278,7 +282,7 @@
       }
     });
 
-    // Control de reproducción nativa
+    // Control de video
     AFRAME.registerComponent('video-handler', {
       init: function () {
         const video = document.querySelector('#video-nebulosa');
@@ -353,8 +357,8 @@
     <a-entity light="type: directional; color: #ffffff; intensity: 1.4;" position="0 25 -16"></a-entity>
 
     <!-- CONOS DE LUZ CÁLIDA SOBRE LAS PAREDES -->
-    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="-7 7.5 -16" rotation="-65 -90 0"></a-entity>
-    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="7 7.5 -16" rotation="-65 90 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="-6 7.5 -16" rotation="-65 -90 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="6 7.5 -16" rotation="-65 90 0"></a-entity>
     <a-entity light="type: spot; color: #fff1d6; intensity: 6.5; angle: 52; penumbra: 0.7; distance: 35;" position="0 8.0 -22" rotation="-55 0 0"></a-entity>
 
     <!-- MODELO 3D DE LA SALA -->
@@ -365,43 +369,36 @@
 
 
     <!-- ========================================================================= -->
-    <!-- ZONA CURATORIAL: 9 LIENZOS ORGANIZADOS EN 3 GRUPOS                        -->
-    <!-- INSTRUCCIÓN: Para poner una imagen de WordPress o GitHub, busca el lienzo -->
-    <!-- y coloca el enlace dentro del parámetro: src="AQUÍ_TU_ENLACE"              -->
-    <!-- Si dejas src="" aparecerá el lienzo en espera elegante por defecto.       -->
+    <!-- ZONA CURATORIAL: 9 LIENZOS ORGANIZADOS EN 3 GRUPOS (3 Obras por grupo)    -->
+    <!-- Para colocar una obra, pon el link directo en el atributo: src="TU_URL"    -->
+    <!-- Si dejas src="" aparecerá el lienzo en espera estilizado.                 -->
     <!-- ========================================================================= -->
 
     <!-- ========================================================= -->
     <!-- GRUPO 1: PARED IZQUIERDA (3 Obras)                        -->
     <!-- ========================================================= -->
 
-    <!-- LIENZO 1 (Izquierda - Entrada) -->
-    <a-entity position="-7.8 2.6 -11" rotation="0 90 0">
-      <!-- Marco Galería -->
-      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
-      <!-- Lienzo -->
-      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
-               lienzo-placeholder="titulo: OBRA 1; subtitulo: Grupo 1 - Izquierda; src: ;">
+    <!-- OBRA 1 (Izquierda - Frente) -->
+    <a-entity position="-7.2 2.6 -11" rotation="0 90 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 1; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
     </a-entity>
 
-    <!-- LIENZO 2 (Izquierda - Centro) -->
-    <a-entity position="-7.8 2.6 -16" rotation="0 90 0">
-      <!-- Marco Galería -->
-      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
-      <!-- Lienzo -->
-      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
-               lienzo-placeholder="titulo: OBRA 2; subtitulo: Grupo 1 - Izquierda; src: ;">
+    <!-- OBRA 2 (Izquierda - Centro) -->
+    <a-entity position="-7.2 2.6 -16" rotation="0 90 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 2; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
     </a-entity>
 
-    <!-- LIENZO 3 (Izquierda - Fondo) -->
-    <a-entity position="-7.8 2.6 -21" rotation="0 90 0">
-      <!-- Marco Galería -->
-      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
-      <!-- Lienzo -->
-      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
-               lienzo-placeholder="titulo: OBRA 3; subtitulo: Grupo 1 - Izquierda; src: ;">
+    <!-- OBRA 3 (Izquierda - Fondo) -->
+    <a-entity position="-7.2 2.6 -21" rotation="0 90 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 3; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
     </a-entity>
 
@@ -410,33 +407,27 @@
     <!-- GRUPO 2: PARED DERECHA (3 Obras)                          -->
     <!-- ========================================================= -->
 
-    <!-- LIENZO 4 (Derecha - Entrada) -->
-    <a-entity position="7.8 2.6 -11" rotation="0 -90 0">
-      <!-- Marco Galería -->
-      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
-      <!-- Lienzo -->
-      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
-               lienzo-placeholder="titulo: OBRA 4; subtitulo: Grupo 2 - Derecha; src: ;">
+    <!-- OBRA 4 (Derecha - Frente) -->
+    <a-entity position="7.2 2.6 -11" rotation="0 -90 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 4; subtitulo: Grupo 2 - Derecha; src: ;">
       </a-plane>
     </a-entity>
 
-    <!-- LIENZO 5 (Derecha - Centro) -->
-    <a-entity position="7.8 2.6 -16" rotation="0 -90 0">
-      <!-- Marco Galería -->
-      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
-      <!-- Lienzo -->
-      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
-               lienzo-placeholder="titulo: OBRA 5; subtitulo: Grupo 2 - Derecha; src: ;">
+    <!-- OBRA 5 (Derecha - Centro) -->
+    <a-entity position="7.2 2.6 -16" rotation="0 -90 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 5; subtitulo: Grupo 2 - Derecha; src: ;">
       </a-plane>
     </a-entity>
 
-    <!-- LIENZO 6 (Derecha - Fondo) -->
-    <a-entity position="7.8 2.6 -21" rotation="0 -90 0">
-      <!-- Marco Galería -->
-      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
-      <!-- Lienzo -->
-      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
-               lienzo-placeholder="titulo: OBRA 6; subtitulo: Grupo 2 - Derecha; src: ;">
+    <!-- OBRA 6 (Derecha - Fondo) -->
+    <a-entity position="7.2 2.6 -21" rotation="0 -90 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 6; subtitulo: Grupo 2 - Derecha; src: ;">
       </a-plane>
     </a-entity>
 
@@ -445,33 +436,27 @@
     <!-- GRUPO 3: PARED DE FONDO (3 Obras)                         -->
     <!-- ========================================================= -->
 
-    <!-- LIENZO 7 (Fondo - Izquierda) -->
-    <a-entity position="-4.5 2.6 -24.8" rotation="0 0 0">
-      <!-- Marco Galería -->
-      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
-      <!-- Lienzo -->
-      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
-               lienzo-placeholder="titulo: OBRA 7; subtitulo: Grupo 3 - Fondo; src: ;">
+    <!-- OBRA 7 (Fondo - Izquierda) -->
+    <a-entity position="-4.2 2.6 -23.8" rotation="0 0 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 7; subtitulo: Grupo 3 - Fondo; src: ;">
       </a-plane>
     </a-entity>
 
-    <!-- LIENZO 8 (Fondo - Centro de Honor Principal) -->
-    <a-entity position="0 2.8 -24.8" rotation="0 0 0">
-      <!-- Marco Galería Principal -->
-      <a-plane width="3.4" height="2.3" color="#0c0b12"></a-plane>
-      <!-- Lienzo -->
-      <a-plane position="0 0 0.02" width="3.2" height="2.1" 
-               lienzo-placeholder="titulo: OBRA 8; subtitulo: Obra Principal; src: ;">
+    <!-- OBRA 8 (Fondo - Centro de Honor Principal) -->
+    <a-entity position="0 2.8 -23.8" rotation="0 0 0">
+      <a-box width="3.2" height="2.2" depth="0.10" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.06" width="3.05" height="2.05"
+               lienzo-obra="titulo: OBRA 8; subtitulo: Espacio Principal; src: ;">
       </a-plane>
     </a-entity>
 
-    <!-- LIENZO 9 (Fondo - Derecha) -->
-    <a-entity position="4.5 2.6 -24.8" rotation="0 0 0">
-      <!-- Marco Galería -->
-      <a-plane width="2.6" height="1.9" color="#0c0b12"></a-plane>
-      <!-- Lienzo -->
-      <a-plane position="0 0 0.02" width="2.4" height="1.7" 
-               lienzo-placeholder="titulo: OBRA 9; subtitulo: Grupo 3 - Fondo; src: ;">
+    <!-- OBRA 9 (Fondo - Derecha) -->
+    <a-entity position="4.2 2.6 -23.8" rotation="0 0 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.05" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 9; subtitulo: Grupo 3 - Fondo; src: ;">
       </a-plane>
     </a-entity>
 
