@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galería Virtual Nebulosa</title>
+  
+  <!-- Fuente oficial Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+
+  <style>
+    /* PANEL DE INSTRUCCIONES VERTICAL DERECHO */
+    #nav-guide {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+      background: rgba(14, 14, 20, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      padding: 20px 14px;
+      color: #ffffff;
+      font-family: 'Poppins', sans-serif;
+      z-index: 1000;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      user-select: none;
+    }
+
+    .guide-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #9c9cb8;
+      font-weight: 700;
+    }
+
+    .arrow-pad {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .arrow-row {
+      display: flex;
+      gap: 5px;
+    }
+    .key-cap {
+      width: 32px;
+      height: 32px;
+      background: #252535;
+      border: 1px solid #404058;
+      border-bottom: 3px solid #161622;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      color: #f5f5fa;
+    }
+
+    .guide-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 11px;
+      text-align: center;
+      color: #dcdcfa;
+      gap: 6px;
+    }
+
+    .mouse-icon {
+      width: 22px;
+      height: 30px;
+      border: 2px solid #ffffff;
+      border-radius: 13px;
+      position: relative;
+    }
+    .mouse-icon::after {
+      content: '';
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 7px;
+      background: #ffffff;
+      border-radius: 2px;
+    }
+  </style>
+
+  <script>
+    // Optimización de materiales y remoción física total de plantas
+    AFRAME.registerComponent('enhancer', {
+      init: function () {
+        this.el.addEventListener('model-loaded', () => {
+          const mesh = this.el.getObject3D('mesh');
+          if (!mesh) return;
+
+          const objetosParaEliminar = [];
+
+          mesh.traverse((node) => {
+            const matName = node.material && node.material.name ? node.material.name.toLowerCase() : "";
+            const objName = node.name ? node.name.toLowerCase() : "";
+            const combined = objName + " " + matName;
+
+            // Detección exhaustiva de vegetación y macetas
+            const esVegetacion = combined.includes('plant') || combined.includes('leaf') || 
+                                 combined.includes('leaves') || combined.includes('hoja') || 
+                                 combined.includes('pot') || combined.includes('maceta') || 
+                                 combined.includes('tree') || combined.includes('foliage') || 
+                                 combined.includes('flora') || combined.includes('flower') || 
+                                 combined.includes('branch') || combined.includes('vase');
+
+            let tieneColorPlanta = false;
+            if (node.material && node.material.color) {
+              const c = node.material.color;
+              if (c.g > 0.18 && c.g > c.r * 1.15 && c.g > c.b * 1.05) {
+                tieneColorPlanta = true;
+              }
+            }
+
+            if (esVegetacion || tieneColorPlanta) {
+              objetosParaEliminar.push(node);
+            }
+
+            if (node.isMesh && node.material) {
+              // Ventanas: vidrio ahumado translúcido
+              if (combined.includes('glass') || combined.includes('window') || combined.includes('vidrio') || combined.includes('cristal') || combined.includes('panel')) {
+                node.material.color = new THREE.Color(0x22222b);
+                node.material.transparent = true;
+                node.material.opacity = 0.52;
+                node.material.roughness = 0.20;
+                node.material.metalness = 0.15;
+                node.material.depthWrite = false;
+              } 
+              // Focos del techo: emisores encendidos
+              else if (combined.includes('light') || combined.includes('foco') || combined.includes('lamp') || combined.includes('spot') || combined.includes('bulb')) {
+                node.material.emissive = new THREE.Color(0xffeedd);
+                node.material.emissiveIntensity = 4.0;
+              } 
+              // Suelo de mármol: preserva la textura con tinte claro
+              else if (combined.includes('floor') || combined.includes('suelo') || combined.includes('piso')) {
+                node.material.color = new THREE.Color(0xd0d4de);
+                node.material.roughness = 0.25;
+                node.material.metalness = 0.08;
+              } 
+              // Paredes: morado original de Blender
+              else if (combined.includes('wall') || combined.includes('pared') || combined.includes('muro')) {
+                node.material.color = new THREE.Color(0x584b70);
+                node.material.roughness = 0.88;
+                node.material.metalness = 0.02;
+              }
+              node.material.needsUpdate = true;
+            }
+          });
+
+          // Eliminación física definitiva de la jerarquía 3D
+          objetosParaEliminar.forEach((obj) => {
+            obj.visible = false;
+            obj.scale.set(0, 0, 0);
+            if (obj.geometry) obj.geometry.dispose();
+            if (obj.parent) obj.parent.remove(obj);
+          });
+        });
+      }
+    });
+
+    // Rótulo Poppins con orientación de lectura natural y doble cara
+    AFRAME.registerComponent('rotulo-poppins', {
+      init: function () {
+        document.fonts.ready.then(() => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 1024;
+          canvas.height = 256;
+          const ctx = canvas.getContext('2d');
+
+          // Fondo cristal oscuro uniforme
+          ctx.fillStyle = "rgba(18, 16, 30, 0.95)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Borde fino decorativo
+          ctx.strokeStyle = "rgba(230, 220, 255, 0.35)";
+          ctx.lineWidth = 6;
+          ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+          // Texto en Poppins
+          ctx.font = "600 48px 'Poppins', sans-serif";
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("«Donde cada arte brilla»", canvas.width / 2, canvas.height / 2);
+
+          const texture = new THREE.CanvasTexture(canvas);
+          const mat = new THREE.MeshBasicMaterial({ 
+            map: texture, 
+            transparent: true,
+            side: THREE.DoubleSide
+          });
+          const mesh = this.el.getObject3D('mesh');
+          if (mesh) mesh.material = mat;
+        });
+      }
+    });
+
+    // Control de reproducción nativa
+    AFRAME.registerComponent('video-handler', {
+      init: function () {
+        const video = document.querySelector('#video-nebulosa');
+        if (!video) return;
+
+        video.playbackRate = 1.0;
+
+        const startVideo = () => {
+          if (video.paused) {
+            video.playbackRate = 1.0;
+            video.play().catch(() => {});
+          }
+          window.removeEventListener('click', startVideo);
+          window.removeEventListener('keydown', startVideo);
+        };
+        window.addEventListener('click', startVideo);
+        window.addEventListener('keydown', startVideo);
+      }
+    });
+  </script>
+</head>
+<body style="margin: 0; overflow: hidden; background-color: #000;">
+
+  <!-- GUÍA DE NAVEGACIÓN VERTICAL -->
+  <div id="nav-guide">
+    <div class="guide-title">Navegación</div>
+    
+    <div class="arrow-pad">
+      <div class="key-cap">↑</div>
+      <div class="arrow-row">
+        <div class="key-cap">←</div>
+        <div class="key-cap">↓</div>
+        <div class="key-cap">→</div>
+      </div>
+    </div>
+    <span style="font-size: 10px; color: #9c9cb8;">Caminar (o WASD)</span>
+
+    <div style="width: 80%; height: 1px; background: rgba(255,255,255,0.15);"></div>
+
+    <div class="guide-item">
+      <div class="mouse-icon"></div>
+      <span>Girar 360°<br>(Arrastrar mouse)</span>
+    </div>
+  </div>
+
+  <a-scene 
+    video-handler
+    renderer="colorManagement: true; physicallyCorrectLights: true; exposure: 1.25; toneMapping: ACESFilmic;">
+
+    <a-assets timeout="10000">
+      <a-asset-item id="modelo-sala" src="galeria.glb"></a-asset-item>
+      
+      <video id="video-nebulosa" 
+             src="nebulosa.mp4" 
+             autoplay 
+             loop 
+             muted 
+             playsinline 
+             webkit-playsinline 
+             crossorigin="anonymous">
+      </video>
+    </a-assets>
+
+    <!-- FONDO DE VIDEO CÓSMICO -->
+    <a-videosphere src="#video-nebulosa" rotation="0 -90 0"></a-videosphere>
+
+    <!-- ILUMINACIÓN AMBIENTAL DE LA SALA -->
+    <a-entity light="type: ambient; color: #f0f2fa; intensity: 1.1;"></a-entity>
+    <a-entity light="type: hemisphere; groundColor: #282835; color: #ffffff; intensity: 1.1;"></a-entity>
+
+    <!-- LUZ CENITAL DESDE LA CÚPULA -->
+    <a-entity light="type: directional; color: #ffffff; intensity: 1.4;" position="0 25 -16"></a-entity>
+
+    <!-- CONOS DE LUZ CÁLIDA SOBRE LAS PAREDES -->
+    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="-9 8.3 -16" rotation="-65 -90 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="9 8.3 -16" rotation="-65 90 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 6.5; angle: 52; penumbra: 0.7; distance: 35;" position="0 8.5 -25" rotation="-55 0 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 5.5; angle: 52; penumbra: 0.7; distance: 28;" position="0 8.5 -7" rotation="-55 180 0"></a-entity>
+
+    <!-- MODELO 3D DE LA SALA -->
+    <a-entity gltf-model="#modelo-sala" enhancer position="0 0 0"></a-entity>
+
+    <!-- RÓTULO EXTERIOR: Orientación correcta, desplazado a la izquierda y montado en el muro -->
+    <a-plane position="-2.2 2.2 -1.28" rotation="0 0 0" width="3.6" height="0.9" rotulo-poppins></a-plane>
+
+    <!-- CÁMARA (Inicia adentro en el centro del salón) -->
+    <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="0 2.2 -16">
+      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false"></a-camera>
+    </a-entity>
+
+  </a-scene>
+
+</body>
+</html>
