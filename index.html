@@ -14,6 +14,16 @@
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
 
   <style>
+    /* CURSOR DE MANITA ABIERTA PARA ARRASTRAR / MIRAR */
+    canvas.a-canvas, a-scene {
+      cursor: grab !important;
+      cursor: -webkit-grab !important;
+    }
+    canvas.a-canvas:active, a-scene:active {
+      cursor: grabbing !important;
+      cursor: -webkit-grabbing !important;
+    }
+
     /* PANEL DE INSTRUCCIONES VERTICAL DERECHO */
     #nav-guide {
       position: absolute;
