@@ -172,10 +172,10 @@
       }
     });
 
-    // Cuadro vertical de oro para los Ganadores del Primer Lugar
+    // Cuadro vertical de oro para los Ganadores de los Primeros Lugares
     AFRAME.registerComponent('cuadro-ganador', {
       schema: {
-        titulo: { type: 'string', default: 'GANADORES DEL PRIMER LUGAR' },
+        titulo: { type: 'string', default: 'GANADORES DE LOS PRIMEROS LUGARES' },
         nombre: { type: 'string', default: 'Artistas Galardonados' }
       },
       init: function () {
@@ -225,13 +225,15 @@
         ctx.lineWidth = 3;
         ctx.stroke();
 
-        // Título del premio en oro
+        // Título dividido en 2 líneas equilibradas (sin tocar los bordes)
         ctx.fillStyle = '#ffffff';
-        ctx.font = "bold 32px 'Poppins', sans-serif";
-        ctx.fillText(data.titulo, canvas.width / 2, 360);
+        ctx.font = "bold 30px 'Poppins', sans-serif";
+        ctx.fillText("GANADORES DE LOS", canvas.width / 2, 335);
+        ctx.font = "bold 34px 'Poppins', sans-serif";
+        ctx.fillText("PRIMEROS LUGARES", canvas.width / 2, 380);
 
         // Gran estrella de honor central
-        ctx.font = "bold 110px sans-serif";
+        ctx.font = "bold 105px sans-serif";
         ctx.fillStyle = '#fbbf24';
         ctx.fillText("★", canvas.width / 2, 510);
 
@@ -467,17 +469,17 @@
     <!-- GRUPO 1: PARED IZQUIERDA (Cuadro de Honor + 3 Obras calibradas en X=-9.75)-->
     <!-- ========================================================================= -->
 
-    <!-- CUADRO DE HONOR VERTICAL: GANADORES DEL PRIMER LUGAR -->
+    <!-- CUADRO DE HONOR VERTICAL: GANADORES DE LOS PRIMEROS LUGARES -->
     <!-- Modifica el parámetro: nombre: 'Texto o Nombre Deseado' -->
-    <a-entity position="-9.70 1.95 -15.55" rotation="0 90 0">
+    <a-entity position="-9.70 1.95 -16.00" rotation="0 90 0">
       <a-box width="1.20" height="1.80" depth="0.08" color="#261338" material="roughness: 0.25; metalness: 0.5"></a-box>
       <!-- Cara frontal -->
       <a-plane position="0 0 0.045" width="1.10" height="1.70"
-               cuadro-ganador="titulo: GANADORES DEL PRIMER LUGAR; nombre: Artistas Galardonados;">
+               cuadro-ganador="titulo: GANADORES DE LOS PRIMEROS LUGARES; nombre: Artistas Galardonados;">
       </a-plane>
       <!-- Cara posterior -->
       <a-plane position="0 0 -0.045" rotation="0 180 0" width="1.10" height="1.70"
-               cuadro-ganador="titulo: GANADORES DEL PRIMER LUGAR; nombre: Artistas Galardonados;">
+               cuadro-ganador="titulo: GANADORES DE LOS PRIMEROS LUGARES; nombre: Artistas Galardonados;">
       </a-plane>
     </a-entity>
 
