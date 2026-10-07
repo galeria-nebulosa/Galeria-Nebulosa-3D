@@ -90,7 +90,7 @@
     .mouse-icon::after {
       content: '';
       position: absolute;
-      top: 5px;
+      top: 50%;
       left: 50%;
       transform: translateX(-50%);
       width: 2px;
@@ -205,7 +205,7 @@
           const texture = new THREE.CanvasTexture(canvas);
           const mat = new THREE.MeshBasicMaterial({ 
             map: texture, 
-            transparent: true,
+            transparent: true, 
             side: THREE.DoubleSide
           });
           const mesh = this.el.getObject3D('mesh');
@@ -299,6 +299,127 @@
 
     <!-- RÓTULO EXTERIOR: Orientación correcta, desplazado a la izquierda y montado en el muro -->
     <a-plane position="-2.2 2.2 -1.28" rotation="0 0 0" width="3.6" height="0.9" rotulo-poppins></a-plane>
+
+
+    <!-- ========================================================================= -->
+    <!-- ZONA CURATORIAL: 9 LIENZOS ORGANIZADOS EN 3 GRUPOS                        -->
+    <!-- INSTRUCCIÓN: Para mostrar una obra, solo reemplaza el texto dentro de     -->
+    <!-- src="..." con la URL de tu imagen de WordPress o el archivo de GitHub.    -->
+    <!-- ========================================================================= -->
+
+    <!-- ========================================================= -->
+    <!-- GRUPO 1: PARED IZQUIERDA (3 Obras)                        -->
+    <!-- ========================================================= -->
+
+    <!-- LIENZO 1 (Izquierda - Sector Entrada) -->
+    <a-entity position="-11.85 2.8 -10" rotation="0 90 0">
+      <!-- Marco Negro Galería -->
+      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
+      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
+      <a-image position="0 0 0.02" width="2.8" height="2.0" 
+               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+1"
+               material="roughness: 0.4;">
+      </a-image>
+    </a-entity>
+
+    <!-- LIENZO 2 (Izquierda - Sector Centro) -->
+    <a-entity position="-11.85 2.8 -16" rotation="0 90 0">
+      <!-- Marco Negro Galería -->
+      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
+      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
+      <a-image position="0 0 0.02" width="2.8" height="2.0" 
+               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+2"
+               material="roughness: 0.4;">
+      </a-image>
+    </a-entity>
+
+    <!-- LIENZO 3 (Izquierda - Sector Fondo) -->
+    <a-entity position="-11.85 2.8 -22" rotation="0 90 0">
+      <!-- Marco Negro Galería -->
+      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
+      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
+      <a-image position="0 0 0.02" width="2.8" height="2.0" 
+               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+3"
+               material="roughness: 0.4;">
+      </a-image>
+    </a-entity>
+
+
+    <!-- ========================================================= -->
+    <!-- GRUPO 2: PARED DERECHA (3 Obras)                          -->
+    <!-- ========================================================= -->
+
+    <!-- LIENZO 4 (Derecha - Sector Entrada) -->
+    <a-entity position="11.85 2.8 -10" rotation="0 -90 0">
+      <!-- Marco Negro Galería -->
+      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
+      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
+      <a-image position="0 0 0.02" width="2.8" height="2.0" 
+               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+4"
+               material="roughness: 0.4;">
+      </a-image>
+    </a-entity>
+
+    <!-- LIENZO 5 (Derecha - Sector Centro) -->
+    <a-entity position="11.85 2.8 -16" rotation="0 -90 0">
+      <!-- Marco Negro Galería -->
+      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
+      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
+      <a-image position="0 0 0.02" width="2.8" height="2.0" 
+               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+5"
+               material="roughness: 0.4;">
+      </a-image>
+    </a-entity>
+
+    <!-- LIENZO 6 (Derecha - Sector Fondo) -->
+    <a-entity position="11.85 2.8 -22" rotation="0 -90 0">
+      <!-- Marco Negro Galería -->
+      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
+      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
+      <a-image position="0 0 0.02" width="2.8" height="2.0" 
+               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+6"
+               material="roughness: 0.4;">
+      </a-image>
+    </a-entity>
+
+
+    <!-- ========================================================= -->
+    <!-- GRUPO 3: PARED DEL FONDO (3 Obras Principales)            -->
+    <!-- ========================================================= -->
+
+    <!-- LIENZO 7 (Fondo - Lateral Izquierdo) -->
+    <a-entity position="-6.0 2.8 -27.85" rotation="0 0 0">
+      <!-- Marco Negro Galería -->
+      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
+      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
+      <a-image position="0 0 0.02" width="2.8" height="2.0" 
+               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+7"
+               material="roughness: 0.4;">
+      </a-image>
+    </a-entity>
+
+    <!-- LIENZO 8 (Fondo - Centro de Honor) -->
+    <a-entity position="0 3.0 -27.85" rotation="0 0 0">
+      <!-- Marco Negro Galería Destacado -->
+      <a-plane width="3.8" height="2.6" color="#0c0c10" material="roughness: 0.9;"></a-plane>
+      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
+      <a-image position="0 0 0.02" width="3.6" height="2.4" 
+               src="https://placehold.co/1400x900/1e172f/ffffff?text=Lienzo+8+(Principal)"
+               material="roughness: 0.4;">
+      </a-image>
+    </a-entity>
+
+    <!-- LIENZO 9 (Fondo - Lateral Derecho) -->
+    <a-entity position="6.0 2.8 -27.85" rotation="0 0 0">
+      <!-- Marco Negro Galería -->
+      <a-plane width="3.0" height="2.2" color="#111116" material="roughness: 0.9;"></a-plane>
+      <!-- Lienzo de la Obra: PEGA AQUÍ TU ENLACE -->
+      <a-image position="0 0 0.02" width="2.8" height="2.0" 
+               src="https://placehold.co/1200x900/1e172f/ffffff?text=Lienzo+9"
+               material="roughness: 0.4;">
+      </a-image>
+    </a-entity>
+
 
     <!-- CÁMARA (Inicia adentro en el centro del salón) -->
     <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="0 2.2 -16">
