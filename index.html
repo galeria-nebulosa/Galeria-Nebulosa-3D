@@ -14,12 +14,13 @@
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
 
   <style>
-    /* CURSOR DE MANITA ABIERTA PARA ARRASTRAR / MIRAR */
-    canvas.a-canvas, a-scene {
+    /* CURSOR DE MANITA ABIERTA / CERRADA PARA ARRASTRE */
+    html, body, canvas.a-canvas, a-scene {
       cursor: grab !important;
       cursor: -webkit-grab !important;
+      user-select: none;
     }
-    canvas.a-canvas:active, a-scene:active {
+    body:active, canvas.a-canvas:active, a-scene:active {
       cursor: grabbing !important;
       cursor: -webkit-grabbing !important;
     }
@@ -44,6 +45,7 @@
       align-items: center;
       gap: 16px;
       user-select: none;
+      cursor: default !important;
     }
 
     .guide-title {
@@ -119,7 +121,7 @@
       font-size: 11px;
       font-weight: 600;
       font-family: 'Poppins', sans-serif;
-      cursor: pointer;
+      cursor: pointer !important;
       box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
       transition: all 0.2s ease;
     }
@@ -609,9 +611,9 @@
     </a-entity>
 
 
-    <!-- CÁMARA (Inicia adentro en el centro del salón) -->
+    <!-- CÁMARA (Inicia adentro en el centro del salón, con giro libre por arrastre suave) -->
     <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="0 2.2 -16">
-      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false"></a-camera>
+      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false;"></a-camera>
     </a-entity>
 
   </a-scene>
