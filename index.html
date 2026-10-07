@@ -172,6 +172,109 @@
       }
     });
 
+    // Cuadro vertical ornamentado de oro para el Ganador del Primer Lugar
+    AFRAME.registerComponent('cuadro-ganador', {
+      schema: {
+        titulo: { type: 'string', default: 'GANADOR DEL PRIMER LUGAR' },
+        nombre: { type: 'string', default: 'Nombre y Apellido' }
+      },
+      init: function () {
+        const el = this.el;
+        const data = this.data;
+
+        document.fonts.ready.then(() => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 720;
+          canvas.height = 1024;
+          const ctx = canvas.getContext('2d');
+
+          // Fondo regio negro obsidiana con matiz vino/dorado
+          const fondo = ctx.createLinearGradient(0, 0, 720, 1024);
+          fondo.addColorStop(0, '#15101c');
+          fondo.addColorStop(0.5, '#0b0813');
+          fondo.addColorStop(1, '#1b1222');
+          ctx.fillStyle = fondo;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Borde exterior de oro
+          ctx.strokeStyle = '#ffd700';
+          ctx.lineWidth = 10;
+          ctx.strokeRect(26, 26, canvas.width - 52, canvas.height - 52);
+
+          // Borde fino interior dorado con esquinas ornamentadas
+          ctx.strokeStyle = 'rgba(255, 215, 0, 0.45)';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(45, 45, canvas.width - 90, canvas.height - 90);
+
+          // Estrellas de 5 puntas decorativas en la parte superior
+          ctx.fillStyle = '#ffd700';
+          ctx.font = "bold 38px 'Poppins', sans-serif";
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText("★  ★  ★", canvas.width / 2, 120);
+
+          // Distintivo de gala
+          ctx.font = "600 22px 'Poppins', sans-serif";
+          ctx.fillStyle = "#e2c07a";
+          ctx.fillText("RECONOCIMIENTO DE HONOR", canvas.width / 2, 210);
+
+          // Línea divisoria dorada superior
+          const linea1 = ctx.createLinearGradient(120, 0, 600, 0);
+          linea1.addColorStop(0, 'rgba(255, 215, 0, 0)');
+          linea1.addColorStop(0.5, '#ffd700');
+          linea1.addColorStop(1, 'rgba(255, 215, 0, 0)');
+          ctx.strokeStyle = linea1;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(120, 260);
+          ctx.lineTo(600, 260);
+          ctx.stroke();
+
+          // Título principal en oro brillante
+          ctx.fillStyle = '#ffffff';
+          ctx.font = "bold 36px 'Poppins', sans-serif";
+          ctx.fillText(data.titulo, canvas.width / 2, 380);
+
+          // Medalla estelar central
+          ctx.font = "bold 76px 'Poppins', sans-serif";
+          ctx.fillStyle = "#ffd700";
+          ctx.fillText("★", canvas.width / 2, 510);
+
+          // Nombre del Ganador (grande y destacado)
+          ctx.fillStyle = '#fff4d0';
+          ctx.font = "700 48px 'Poppins', sans-serif";
+          ctx.fillText(data.nombre, canvas.width / 2, 650);
+
+          // Subtítulo de colección
+          ctx.fillStyle = "#cbb180";
+          ctx.font = "400 24px 'Poppins', sans-serif";
+          ctx.fillText("Galería Virtual Nebulosa", canvas.width / 2, 740);
+
+          // Línea divisoria dorada inferior
+          ctx.beginPath();
+          ctx.moveTo(150, 810);
+          ctx.lineTo(570, 810);
+          ctx.stroke();
+
+          // Corona de estrellas inferior
+          ctx.font = "bold 28px 'Poppins', sans-serif";
+          ctx.fillStyle = "rgba(255, 215, 0, 0.75)";
+          ctx.fillText("✦  ✦  ✦", canvas.width / 2, 890);
+
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.colorSpace = THREE.SRGBColorSpace;
+          const mesh = el.getObject3D('mesh');
+          if (mesh) {
+            mesh.material = new THREE.MeshBasicMaterial({ 
+              map: texture, 
+              side: THREE.DoubleSide 
+            });
+            mesh.material.needsUpdate = true;
+          }
+        });
+      }
+    });
+
     // Optimización de materiales y remoción física total de plantas
     AFRAME.registerComponent('enhancer', {
       init: function () {
@@ -373,8 +476,22 @@
     <!-- ========================================================================= -->
 
     <!-- ========================================================================= -->
-    <!-- GRUPO 1: PARED IZQUIERDA (3 Obras - Calibradas en X=-9.75)                 -->
+    <!-- GRUPO 1: PARED IZQUIERDA (Cuadro de Honor + 3 Obras calibradas en X=-9.75)-->
     <!-- ========================================================================= -->
+
+    <!-- CUADRO DE HONOR VERTICAL: GANADOR DEL PRIMER LUGAR -->
+    <!-- Para cambiar el nombre, solo edita el parámetro: nombre: 'Tu Nombre Aquí' -->
+    <a-entity position="-9.75 1.95 -15.4" rotation="0 90 0">
+      <a-box width="1.35" height="1.85" depth="0.08" color="#1a140a" material="roughness: 0.25; metalness: 0.5"></a-box>
+      <!-- Cara frontal -->
+      <a-plane position="0 0 0.045" width="1.25" height="1.75"
+               cuadro-ganador="titulo: GANADOR DEL PRIMER LUGAR; nombre: Nombre y Apellido;">
+      </a-plane>
+      <!-- Cara posterior -->
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="1.25" height="1.75"
+               cuadro-ganador="titulo: GANADOR DEL PRIMER LUGAR; nombre: Nombre y Apellido;">
+      </a-plane>
+    </a-entity>
 
     <!-- OBRA 1 (Izquierda) -->
     <a-entity position="-9.75 1.95 -18.1" rotation="0 90 0">
