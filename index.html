@@ -98,9 +98,37 @@
       background: #ffffff;
       border-radius: 2px;
     }
+
+    /* BOTÓN DIRECTO PARA ABRIR EL EDITOR 3D */
+    .btn-editor {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-editor:hover {
+      background: linear-gradient(135deg, #6d28d9, #9333ea);
+      transform: scale(1.04);
+    }
   </style>
 
   <script>
+    // Función para activar el Inspector Visual sin teclas
+    function activarEditorVisual() {
+      if (window.AFRAME && window.AFRAME.INSPECTOR) {
+        window.AFRAME.INSPECTOR.open();
+      } else {
+        window.postMessage('INJECT_AFRAME_INSPECTOR', '*');
+      }
+    }
+
     // Generador robusto de lienzos para obras de arte (compatibilidad garantizada)
     AFRAME.registerComponent('lienzo-obra', {
       schema: {
@@ -124,7 +152,6 @@
           }
         };
 
-        // Si se provee una imagen externa/local (ej. de WordPress o GitHub)
         if (data.src && data.src.trim() !== '') {
           const loader = new THREE.TextureLoader();
           loader.setCrossOrigin('anonymous');
@@ -137,13 +164,11 @@
           return;
         }
 
-        // Si no hay imagen aún, generamos un lienzo en espera estilizado en alta resolución
         const canvas = document.createElement('canvas');
         canvas.width = 1024;
         canvas.height = 720;
         const ctx = canvas.getContext('2d');
 
-        // Fondo degradado cósmico sobrio
         const grad = ctx.createLinearGradient(0, 0, 1024, 720);
         grad.addColorStop(0, '#221538');
         grad.addColorStop(0.5, '#161026');
@@ -151,12 +176,10 @@
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Marco interior morado brillante
         ctx.strokeStyle = '#c084fc';
         ctx.lineWidth = 8;
         ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
 
-        // Textos del lienzo
         ctx.fillStyle = '#ffffff';
         ctx.font = "bold 52px 'Poppins', sans-serif";
         ctx.textAlign = 'center';
@@ -187,7 +210,6 @@
         canvas.height = 1024;
         const ctx = canvas.getContext('2d');
 
-        // Fondo tono berenjena institucional de la página web
         const fondo = ctx.createLinearGradient(0, 0, 720, 1024);
         fondo.addColorStop(0, '#2e1845');
         fondo.addColorStop(0.5, '#201230');
@@ -195,29 +217,24 @@
         ctx.fillStyle = fondo;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Marco exterior de oro
         ctx.strokeStyle = '#f59e0b';
         ctx.lineWidth = 14;
         ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
 
-        // Marco interior dorado fino
         ctx.strokeStyle = '#fbbf24';
         ctx.lineWidth = 4;
         ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
 
-        // Estrellas de 5 puntas superiores
         ctx.fillStyle = '#fbbf24';
         ctx.font = "bold 44px sans-serif";
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText("★   ★   ★", canvas.width / 2, 130);
 
-        // Distintivo
         ctx.font = "bold 24px 'Poppins', sans-serif";
         ctx.fillStyle = "#fef3c7";
         ctx.fillText("RECONOCIMIENTO DE HONOR", canvas.width / 2, 210);
 
-        // Línea divisoria dorada
         ctx.beginPath();
         ctx.moveTo(120, 250);
         ctx.lineTo(600, 250);
@@ -225,29 +242,24 @@
         ctx.lineWidth = 3;
         ctx.stroke();
 
-        // Título dividido en 2 líneas equilibradas (sin tocar los bordes)
         ctx.fillStyle = '#ffffff';
         ctx.font = "bold 30px 'Poppins', sans-serif";
         ctx.fillText("GANADORES DE LOS", canvas.width / 2, 335);
         ctx.font = "bold 34px 'Poppins', sans-serif";
         ctx.fillText("PRIMEROS LUGARES", canvas.width / 2, 380);
 
-        // Gran estrella de honor central
         ctx.font = "bold 105px sans-serif";
         ctx.fillStyle = '#fbbf24';
         ctx.fillText("★", canvas.width / 2, 510);
 
-        // Subtítulo / Mención de honor
         ctx.fillStyle = '#fef08a';
         ctx.font = "bold 44px 'Poppins', sans-serif";
         ctx.fillText(data.nombre, canvas.width / 2, 650);
 
-        // Nombre de la galería
         ctx.fillStyle = '#e2e8f0';
         ctx.font = "400 26px 'Poppins', sans-serif";
         ctx.fillText("Galería Nebulosa", canvas.width / 2, 740);
 
-        // Estrellas inferiores
         ctx.fillStyle = '#fbbf24';
         ctx.font = "bold 32px sans-serif";
         ctx.fillText("✦   ★   ✦", canvas.width / 2, 880);
@@ -279,7 +291,6 @@
             const objName = node.name ? node.name.toLowerCase() : "";
             const combined = objName + " " + matName;
 
-            // Detección de vegetación y macetas
             const esVegetacion = combined.includes('plant') || combined.includes('leaf') || 
                                  combined.includes('leaves') || combined.includes('hoja') || 
                                  combined.includes('pot') || combined.includes('maceta') || 
@@ -300,7 +311,6 @@
             }
 
             if (node.isMesh && node.material) {
-              // Ventanas: vidrio ahumado translúcido
               if (combined.includes('glass') || combined.includes('window') || combined.includes('vidrio') || combined.includes('cristal') || combined.includes('panel')) {
                 node.material.color = new THREE.Color(0x22222b);
                 node.material.transparent = true;
@@ -309,18 +319,15 @@
                 node.material.metalness = 0.15;
                 node.material.depthWrite = false;
               } 
-              // Focos del techo
               else if (combined.includes('light') || combined.includes('foco') || combined.includes('lamp') || combined.includes('spot') || combined.includes('bulb')) {
                 node.material.emissive = new THREE.Color(0xffeedd);
                 node.material.emissiveIntensity = 4.0;
               } 
-              // Suelo de mármol
               else if (combined.includes('floor') || combined.includes('suelo') || combined.includes('piso')) {
                 node.material.color = new THREE.Color(0xd0d4de);
                 node.material.roughness = 0.25;
                 node.material.metalness = 0.08;
               } 
-              // Paredes moradas
               else if (combined.includes('wall') || combined.includes('pared') || combined.includes('muro')) {
                 node.material.color = new THREE.Color(0x584b70);
                 node.material.roughness = 0.88;
@@ -330,7 +337,6 @@
             }
           });
 
-          // Eliminación física
           objetosParaEliminar.forEach((obj) => {
             obj.visible = false;
             obj.scale.set(0, 0, 0);
@@ -419,6 +425,9 @@
       <div class="mouse-icon"></div>
       <span>Girar 360°<br>(Arrastrar mouse)</span>
     </div>
+
+    <!-- BOTÓN PARA ABRIR EL EDITOR SIN USAR TECLADO -->
+    <button class="btn-editor" onclick="activarEditorVisual()">🛠️ Abrir Editor 3D</button>
   </div>
 
   <a-scene 
@@ -472,11 +481,9 @@
     <!-- CUADRO DE HONOR VERTICAL: GANADORES DE LOS PRIMEROS LUGARES -->
     <a-entity position="-9.70 1.95 -16.25" rotation="0 90 0">
       <a-box width="1.20" height="1.80" depth="0.08" color="#261338" material="roughness: 0.25; metalness: 0.5"></a-box>
-      <!-- Cara frontal -->
       <a-plane position="0 0 0.045" width="1.10" height="1.70"
                cuadro-ganador="titulo: GANADORES DE LOS PRIMEROS LUGARES; nombre: Artistas Galardonados;">
       </a-plane>
-      <!-- Cara posterior -->
       <a-plane position="0 0 -0.045" rotation="0 180 0" width="1.10" height="1.70"
                cuadro-ganador="titulo: GANADORES DE LOS PRIMEROS LUGARES; nombre: Artistas Galardonados;">
       </a-plane>
@@ -485,11 +492,9 @@
     <!-- OBRA 1 (Izquierda) -->
     <a-entity position="-9.75 1.95 -18.1" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <!-- Cara frontal -->
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 1; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
-      <!-- Cara posterior -->
       <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 1; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
@@ -498,11 +503,9 @@
     <!-- OBRA 2 (Izquierda - Centro) -->
     <a-entity position="-9.75 1.95 -20.8" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <!-- Cara frontal -->
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 2; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
-      <!-- Cara posterior -->
       <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 2; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
@@ -511,23 +514,21 @@
     <!-- OBRA 3 (Izquierda) -->
     <a-entity position="-9.75 1.95 -23.5" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <!-- Cara frontal -->
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 3; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
-      <!-- Cara posterior -->
       <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 3; subtitulo: Grupo 1 - Izquierda; src: ;">
       </a-plane>
     </a-entity>
 
 
-    <!-- ========================================================================= -->
-    <!-- GRUPO 2: PARED DERECHA (Montadas de frente sobre la pared morada)         -->
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
+    <!-- GRUPO 2: PARED DERECHA (Puntos base iniciales)            -->
+    <!-- ========================================================= -->
 
     <!-- OBRA 4 (Derecha - Frente) -->
-    <a-entity position="5.25 2.05 -5.8" rotation="0 -90 0">
+    <a-entity id="obra-4" position="5.25 2.05 -5.8" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 4; subtitulo: Grupo 2 - Derecha; src: ;">
@@ -538,7 +539,7 @@
     </a-entity>
 
     <!-- OBRA 5 (Derecha - Centro) -->
-    <a-entity position="5.25 2.05 -8.4" rotation="0 -90 0">
+    <a-entity id="obra-5" position="5.25 2.05 -8.4" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 5; subtitulo: Grupo 2 - Derecha; src: ;">
@@ -549,7 +550,7 @@
     </a-entity>
 
     <!-- OBRA 6 (Derecha - Fondo) -->
-    <a-entity position="5.25 2.05 -11.0" rotation="0 -90 0">
+    <a-entity id="obra-6" position="5.25 2.05 -11.0" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 6; subtitulo: Grupo 2 - Derecha; src: ;">
