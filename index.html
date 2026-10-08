@@ -126,10 +126,11 @@
       transform: translateY(-1px);
     }
 
-    /* PANEL DE INSTRUCCIONES Y FLECHAS DE MOVIMIENTO EN PANTALLA */
+    /* PANEL DE INSTRUCCIONES Y FLECHAS DE MOVIMIENTO EN PANTALLA (ELEVADO Y CENTRADO A LA DERECHA) */
     #nav-guide {
       position: fixed;
-      bottom: 24px;
+      top: 50%;
+      transform: translateY(-50%);
       right: 20px;
       background: rgba(14, 14, 20, 0.90);
       backdrop-filter: blur(14px);
@@ -306,13 +307,12 @@
     }
 
     function abrirModalObra(titulo, desc, link) {
-      // Evitar abrir modal si el editor 3D está activo
       if (document.querySelector('#aframeInspector, [data-aframe-inspector]')) return;
       document.getElementById('artwork-modal-title').textContent = titulo || 'Obra';
       document.getElementById('artwork-modal-desc').textContent = desc || 'Descripción disponible próximamente.';
       const btnLink = document.getElementById('artwork-modal-link');
       btnLink.href = link || '#';
-      btnLink.target = link && link !== '#' ? '_blank' : '_self';
+      btnLink.target = (link && link !== '#') ? '_blank' : '_self';
       document.getElementById('artwork-modal-overlay').style.display = 'flex';
     }
 
@@ -417,7 +417,7 @@
       }
     }, 600);
 
-    // FUNCIÓN DE GUARDADO DIRECTO DESDE EL MOTOR 3D (TODOS LOS ELEMENTOS)
+    // FUNCIÓN DE GUARDADO DIRECTO DESDE EL MOTOR 3D
     function guardarHtmlActualizado() {
       let reporte = "Coordenadas guardadas:\n";
 
@@ -467,7 +467,7 @@
       alert("✅ ¡Cambios guardados con éxito!\n\n" + reporte + "\nReemplaza este archivo en GitHub.");
     }
 
-    // COMPONENTE PARA ABRIR INFORMACIÓN DE LA OBRA AL HACER CLIC
+    // COMPONENTE DE INTERACCIÓN POR CLIC DIRECTO
     AFRAME.registerComponent('obra-interactiva', {
       schema: {
         titulo: { type: 'string', default: '' },
@@ -478,10 +478,17 @@
         const el = this.el;
         const data = this.data;
 
-        el.addEventListener('click', (e) => {
-          e.stopPropagation();
-          abrirModalObra(data.titulo, data.desc, data.link);
-        });
+        // Añadir clase y listener al elemento y a sus hijos visuales
+        const vincularClic = (target) => {
+          target.classList.add('clickable');
+          target.addEventListener('click', (e) => {
+            e.stopPropagation();
+            abrirModalObra(data.titulo, data.desc, data.link);
+          });
+        };
+
+        vincularClic(el);
+        el.querySelectorAll('a-plane, a-box').forEach(vincularClic);
       }
     });
 
@@ -792,8 +799,11 @@
     <button class="btn-editor" onclick="activarEditorVisual()">🛠️ Abrir Editor 3D</button>
   </div>
 
+  <!-- ESCENA CON RAYCASTER DE RATÓN ACTIVADO DIRECTO PARA CLICS -->
   <a-scene 
     video-handler
+    cursor="rayOrigin: mouse;"
+    raycaster="objects: .clickable;"
     renderer="colorManagement: true; physicallyCorrectLights: true; exposure: 1.25; toneMapping: ACESFilmic;">
 
     <a-assets timeout="10000">
@@ -841,7 +851,7 @@
     <!-- ========================================================================= -->
 
     <!-- CUADRO DE HONOR VERTICAL: GANADORES DE LOS PRIMEROS LUGARES -->
-    <a-entity id="grupo-1-cuadro-honor" class="clickable"
+    <a-entity id="grupo-1-cuadro-honor"
               obra-interactiva="titulo: Ganadores de los Primeros Lugares; desc: Reconocimiento especial a los artistas galardonados en la muestra anual.; link: #"
               position="-9.95 1.95 -16.08" rotation="0 90 0">
       <a-box width="1.20" height="1.80" depth="0.08" color="#261338" material="roughness: 0.25; metalness: 0.5"></a-box>
@@ -854,7 +864,7 @@
     </a-entity>
 
     <!-- OBRA 1 (Izquierda) -->
-    <a-entity id="grupo-1-obra-1" class="clickable"
+    <a-entity id="grupo-1-obra-1"
               obra-interactiva="titulo: Título de Obra 1; desc: Descripción del cuadro 1; link: #"
               position="-9.86 1.95 -18.11" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
@@ -867,7 +877,7 @@
     </a-entity>
 
     <!-- OBRA 2 (Izquierda - Centro) -->
-    <a-entity id="grupo-1-obra-2" class="clickable"
+    <a-entity id="grupo-1-obra-2"
               obra-interactiva="titulo: Título de Obra 2; desc: Descripción del cuadro 2; link: #"
               position="-9.93 1.95 -20.81" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
@@ -880,7 +890,7 @@
     </a-entity>
 
     <!-- OBRA 3 (Izquierda) -->
-    <a-entity id="grupo-1-obra-3" class="clickable"
+    <a-entity id="grupo-1-obra-3"
               obra-interactiva="titulo: Título de Obra 3; desc: Descripción del cuadro 3; link: #"
               position="-9.94 1.95 -23.51" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
@@ -898,7 +908,7 @@
     <!-- ========================================================= -->
 
     <!-- OBRA 4 (Derecha - Frente) -->
-    <a-entity id="obra-4" class="clickable"
+    <a-entity id="obra-4"
               obra-interactiva="titulo: Título de Obra 4; desc: Descripción del cuadro 4; link: #"
               position="-0.16 2.05 -16.99" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
@@ -911,7 +921,7 @@
     </a-entity>
 
     <!-- OBRA 5 (Derecha - Centro) -->
-    <a-entity id="obra-5" class="clickable"
+    <a-entity id="obra-5"
               obra-interactiva="titulo: Título de Obra 5; desc: Descripción del cuadro 5; link: #"
               position="-0.28 2.05 -20.06" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
@@ -924,7 +934,7 @@
     </a-entity>
 
     <!-- OBRA 6 (Derecha - Fondo) -->
-    <a-entity id="obra-6" class="clickable"
+    <a-entity id="obra-6"
               obra-interactiva="titulo: Título de Obra 6; desc: Descripción del cuadro 6; link: #"
               position="-0.15 2.05 -23.12" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
@@ -942,7 +952,7 @@
     <!-- ========================================================= -->
 
     <!-- OBRA 7 (Fondo - Izquierda) -->
-    <a-entity id="grupo-3-obra-7" class="clickable"
+    <a-entity id="grupo-3-obra-7"
               obra-interactiva="titulo: Título de Obra 7; desc: Descripción del cuadro 7; link: #"
               position="-8.00 2.03 -25.02" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
@@ -955,7 +965,7 @@
     </a-entity>
 
     <!-- OBRA 8 (Fondo - Centro de Honor Principal) -->
-    <a-entity id="grupo-3-obra-8" class="clickable"
+    <a-entity id="grupo-3-obra-8"
               obra-interactiva="titulo: Título de Obra 8; desc: Descripción de la pieza central de honor.; link: #"
               position="-4.94 2.00 -24.89" rotation="0 0 0">
       <a-box width="3.2" height="2.2" depth="0.10" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
@@ -968,7 +978,7 @@
     </a-entity>
 
     <!-- OBRA 9 (Fondo - Derecha) -->
-    <a-entity id="grupo-3-obra-9" class="clickable"
+    <a-entity id="grupo-3-obra-9"
               obra-interactiva="titulo: Título de Obra 9; desc: Descripción del cuadro 9; link: #"
               position="-1.88 2.06 -24.78" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
@@ -981,17 +991,9 @@
     </a-entity>
 
 
-    <!-- CÁMARA (Inicia en el centro del pasillo con vista frontal a los cuadros y raycaster para clics) -->
+    <!-- CÁMARA (Inicia en el centro del pasillo con vista frontal limpia) -->
     <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="-5.0 2.05 -11.5" rotation="0 0 0">
-      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false;">
-        <!-- Cursor para interacción por clic -->
-        <a-cursor
-          fuse="false"
-          raycaster="objects: .clickable"
-          material="color: #c084fc; shader: flat; opacity: 0.7;"
-          geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.009;">
-        </a-cursor>
-      </a-camera>
+      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false;"></a-camera>
     </a-entity>
 
   </a-scene>
