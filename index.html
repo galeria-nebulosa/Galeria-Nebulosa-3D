@@ -25,6 +25,107 @@
       cursor: -webkit-grabbing !important;
     }
 
+    /* MODAL DE INFORMACIÓN ESTILO ARTSTEPS / NEBULOSA */
+    #artwork-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 8, 18, 0.65);
+      backdrop-filter: blur(8px);
+      z-index: 10000000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    #artwork-modal {
+      background: linear-gradient(145deg, rgba(28, 20, 48, 0.95), rgba(16, 12, 28, 0.95));
+      border: 1px solid rgba(192, 132, 252, 0.35);
+      border-radius: 20px;
+      padding: 28px 24px 24px;
+      max-width: 440px;
+      width: 100%;
+      color: #ffffff;
+      font-family: 'Poppins', sans-serif;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(168, 85, 247, 0.25);
+      position: relative;
+      animation: modalFadeIn 0.22s ease-out;
+      user-select: text;
+      cursor: default;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.92) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    #artwork-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      color: #e9d5ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    #artwork-modal-close:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #ffffff;
+      border-color: #ef4444;
+    }
+    #artwork-modal-badge {
+      display: inline-block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #c084fc;
+      background: rgba(192, 132, 252, 0.15);
+      border: 1px solid rgba(192, 132, 252, 0.3);
+      border-radius: 12px;
+      padding: 3px 10px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    #artwork-modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+    #artwork-modal-desc {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #d8b4fe;
+      margin: 0 0 20px 0;
+    }
+    #artwork-modal-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: #ffffff;
+      text-decoration: none;
+      padding: 11px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+    }
+    #artwork-modal-link:hover {
+      background: linear-gradient(135deg, #6d28d9, #9333ea);
+      transform: translateY(-1px);
+    }
+
     /* PANEL DE INSTRUCCIONES Y FLECHAS DE MOVIMIENTO EN PANTALLA */
     #nav-guide {
       position: fixed;
@@ -204,6 +305,21 @@
       }
     }
 
+    function abrirModalObra(titulo, desc, link) {
+      // Evitar abrir modal si el editor 3D está activo
+      if (document.querySelector('#aframeInspector, [data-aframe-inspector]')) return;
+      document.getElementById('artwork-modal-title').textContent = titulo || 'Obra';
+      document.getElementById('artwork-modal-desc').textContent = desc || 'Descripción disponible próximamente.';
+      const btnLink = document.getElementById('artwork-modal-link');
+      btnLink.href = link || '#';
+      btnLink.target = link && link !== '#' ? '_blank' : '_self';
+      document.getElementById('artwork-modal-overlay').style.display = 'flex';
+    }
+
+    function cerrarModalObra() {
+      document.getElementById('artwork-modal-overlay').style.display = 'none';
+    }
+
     function moverConBoton(tecla) {
       const cameraRig = document.querySelector('#rig');
       if (cameraRig) {
@@ -350,6 +466,24 @@
 
       alert("✅ ¡Cambios guardados con éxito!\n\n" + reporte + "\nReemplaza este archivo en GitHub.");
     }
+
+    // COMPONENTE PARA ABRIR INFORMACIÓN DE LA OBRA AL HACER CLIC
+    AFRAME.registerComponent('obra-interactiva', {
+      schema: {
+        titulo: { type: 'string', default: '' },
+        desc: { type: 'string', default: '' },
+        link: { type: 'string', default: '#' }
+      },
+      init: function () {
+        const el = this.el;
+        const data = this.data;
+
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          abrirModalObra(data.titulo, data.desc, data.link);
+        });
+      }
+    });
 
     AFRAME.registerComponent('lienzo-obra', {
       schema: {
@@ -622,6 +756,17 @@
 </head>
 <body style="margin: 0; overflow: hidden; background-color: #000;">
 
+  <!-- VENTANA EMERGENTE DE INFORMACIÓN DE OBRA (ESTILO ARTSTEPS) -->
+  <div id="artwork-modal-overlay" onclick="if(event.target === this) cerrarModalObra()">
+    <div id="artwork-modal">
+      <button id="artwork-modal-close" onclick="cerrarModalObra()" title="Cerrar">✕</button>
+      <span id="artwork-modal-badge">Galería Nebulosa</span>
+      <h2 id="artwork-modal-title">Título de la Obra</h2>
+      <p id="artwork-modal-desc">Descripción del cuadro...</p>
+      <a id="artwork-modal-link" href="#" target="_blank">Ver obra completa ↗</a>
+    </div>
+  </div>
+
   <!-- GUÍA DE NAVEGACIÓN Y BOTONES DE MOVIMIENTO EN PANTALLA -->
   <div id="nav-guide">
     <div class="guide-title">Navegación</div>
@@ -696,7 +841,9 @@
     <!-- ========================================================================= -->
 
     <!-- CUADRO DE HONOR VERTICAL: GANADORES DE LOS PRIMEROS LUGARES -->
-    <a-entity id="grupo-1-cuadro-honor" position="-9.95 1.95 -16.08" rotation="0 90 0">
+    <a-entity id="grupo-1-cuadro-honor" class="clickable"
+              obra-interactiva="titulo: Ganadores de los Primeros Lugares; desc: Reconocimiento especial a los artistas galardonados en la muestra anual.; link: #"
+              position="-9.95 1.95 -16.08" rotation="0 90 0">
       <a-box width="1.20" height="1.80" depth="0.08" color="#261338" material="roughness: 0.25; metalness: 0.5"></a-box>
       <a-plane position="0 0 0.045" width="1.10" height="1.70"
                cuadro-ganador="titulo: GANADORES DE LOS PRIMEROS LUGARES; nombre: Artistas Galardonados;">
@@ -707,7 +854,9 @@
     </a-entity>
 
     <!-- OBRA 1 (Izquierda) -->
-    <a-entity id="grupo-1-obra-1" position="-9.86 1.95 -18.11" rotation="0 90 0">
+    <a-entity id="grupo-1-obra-1" class="clickable"
+              obra-interactiva="titulo: Título de Obra 1; desc: Descripción del cuadro 1; link: #"
+              position="-9.86 1.95 -18.11" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 1; subtitulo: Grupo 1 - Izquierda; src: ;">
@@ -718,7 +867,9 @@
     </a-entity>
 
     <!-- OBRA 2 (Izquierda - Centro) -->
-    <a-entity id="grupo-1-obra-2" position="-9.93 1.95 -20.81" rotation="0 90 0">
+    <a-entity id="grupo-1-obra-2" class="clickable"
+              obra-interactiva="titulo: Título de Obra 2; desc: Descripción del cuadro 2; link: #"
+              position="-9.93 1.95 -20.81" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 2; subtitulo: Grupo 1 - Izquierda; src: ;">
@@ -729,7 +880,9 @@
     </a-entity>
 
     <!-- OBRA 3 (Izquierda) -->
-    <a-entity id="grupo-1-obra-3" position="-9.94 1.95 -23.51" rotation="0 90 0">
+    <a-entity id="grupo-1-obra-3" class="clickable"
+              obra-interactiva="titulo: Título de Obra 3; desc: Descripción del cuadro 3; link: #"
+              position="-9.94 1.95 -23.51" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 3; subtitulo: Grupo 1 - Izquierda; src: ;">
@@ -745,7 +898,9 @@
     <!-- ========================================================= -->
 
     <!-- OBRA 4 (Derecha - Frente) -->
-    <a-entity id="obra-4" position="-0.16 2.05 -16.99" rotation="0 -90 0">
+    <a-entity id="obra-4" class="clickable"
+              obra-interactiva="titulo: Título de Obra 4; desc: Descripción del cuadro 4; link: #"
+              position="-0.16 2.05 -16.99" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 4; subtitulo: Grupo 2 - Derecha; src: ;">
@@ -756,7 +911,9 @@
     </a-entity>
 
     <!-- OBRA 5 (Derecha - Centro) -->
-    <a-entity id="obra-5" position="-0.28 2.05 -20.06" rotation="0 -90 0">
+    <a-entity id="obra-5" class="clickable"
+              obra-interactiva="titulo: Título de Obra 5; desc: Descripción del cuadro 5; link: #"
+              position="-0.28 2.05 -20.06" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 5; subtitulo: Grupo 2 - Derecha; src: ;">
@@ -767,7 +924,9 @@
     </a-entity>
 
     <!-- OBRA 6 (Derecha - Fondo) -->
-    <a-entity id="obra-6" position="-0.15 2.05 -23.12" rotation="0 -90 0">
+    <a-entity id="obra-6" class="clickable"
+              obra-interactiva="titulo: Título de Obra 6; desc: Descripción del cuadro 6; link: #"
+              position="-0.15 2.05 -23.12" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 6; subtitulo: Grupo 2 - Derecha; src: ;">
@@ -783,7 +942,9 @@
     <!-- ========================================================= -->
 
     <!-- OBRA 7 (Fondo - Izquierda) -->
-    <a-entity id="grupo-3-obra-7" position="-8.00 2.03 -25.02" rotation="0 0 0">
+    <a-entity id="grupo-3-obra-7" class="clickable"
+              obra-interactiva="titulo: Título de Obra 7; desc: Descripción del cuadro 7; link: #"
+              position="-8.00 2.03 -25.02" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 7; subtitulo: Grupo 3 - Fondo; src: ;">
@@ -794,7 +955,9 @@
     </a-entity>
 
     <!-- OBRA 8 (Fondo - Centro de Honor Principal) -->
-    <a-entity id="grupo-3-obra-8" position="-4.94 2.00 -24.89" rotation="0 0 0">
+    <a-entity id="grupo-3-obra-8" class="clickable"
+              obra-interactiva="titulo: Título de Obra 8; desc: Descripción de la pieza central de honor.; link: #"
+              position="-4.94 2.00 -24.89" rotation="0 0 0">
       <a-box width="3.2" height="2.2" depth="0.10" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.055" width="3.05" height="2.05"
                lienzo-obra="titulo: OBRA 8; subtitulo: Espacio Principal; src: ;">
@@ -805,7 +968,9 @@
     </a-entity>
 
     <!-- OBRA 9 (Fondo - Derecha) -->
-    <a-entity id="grupo-3-obra-9" position="-1.88 2.06 -24.78" rotation="0 0 0">
+    <a-entity id="grupo-3-obra-9" class="clickable"
+              obra-interactiva="titulo: Título de Obra 9; desc: Descripción del cuadro 9; link: #"
+              position="-1.88 2.06 -24.78" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 9; subtitulo: Grupo 3 - Fondo; src: ;">
@@ -816,9 +981,17 @@
     </a-entity>
 
 
-    <!-- CÁMARA (Inicia en el centro del pasillo con vista frontal a los cuadros) -->
+    <!-- CÁMARA (Inicia en el centro del pasillo con vista frontal a los cuadros y raycaster para clics) -->
     <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="-5.0 2.05 -11.5" rotation="0 0 0">
-      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false;"></a-camera>
+      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false;">
+        <!-- Cursor para interacción por clic -->
+        <a-cursor
+          fuse="false"
+          raycaster="objects: .clickable"
+          material="color: #c084fc; shader: flat; opacity: 0.7;"
+          geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.009;">
+        </a-cursor>
+      </a-camera>
     </a-entity>
 
   </a-scene>
