@@ -311,8 +311,8 @@
       document.getElementById('artwork-modal-title').textContent = titulo || 'Obra';
       document.getElementById('artwork-modal-desc').textContent = desc || 'Descripción disponible próximamente.';
       const btnLink = document.getElementById('artwork-modal-link');
-      btnLink.href = link || '#';
-      btnLink.target = (link && link !== '#') ? '_blank' : '_self';
+      btnLink.href = link || 'https://galerianebulosa.com/obras-destacadas/';
+      btnLink.target = '_blank';
       document.getElementById('artwork-modal-overlay').style.display = 'flex';
     }
 
@@ -472,13 +472,12 @@
       schema: {
         titulo: { type: 'string', default: '' },
         desc: { type: 'string', default: '' },
-        link: { type: 'string', default: '#' }
+        link: { type: 'string', default: 'https://galerianebulosa.com/obras-destacadas/' }
       },
       init: function () {
         const el = this.el;
         const data = this.data;
 
-        // Añadir clase y listener al elemento y a sus hijos visuales
         const vincularClic = (target) => {
           target.classList.add('clickable');
           target.addEventListener('click', (e) => {
@@ -770,7 +769,7 @@
       <span id="artwork-modal-badge">Galería Nebulosa</span>
       <h2 id="artwork-modal-title">Título de la Obra</h2>
       <p id="artwork-modal-desc">Descripción del cuadro...</p>
-      <a id="artwork-modal-link" href="#" target="_blank">Ver obra completa ↗</a>
+      <a id="artwork-modal-link" href="https://galerianebulosa.com/obras-destacadas/" target="_blank">Ver obra completa ↗</a>
     </div>
   </div>
 
@@ -852,7 +851,7 @@
 
     <!-- CUADRO DE HONOR VERTICAL: GANADORES DE LOS PRIMEROS LUGARES -->
     <a-entity id="grupo-1-cuadro-honor"
-              obra-interactiva="titulo: Ganadores de los Primeros Lugares; desc: Reconocimiento especial a los artistas galardonados en la muestra anual.; link: #"
+              obra-interactiva="titulo: Ganadores de los Primeros Lugares; desc: Reconocimiento especial a los artistas galardonados en la muestra anual.; link: https://galerianebulosa.com/obras-destacadas/"
               position="-9.95 1.95 -16.08" rotation="0 90 0">
       <a-box width="1.20" height="1.80" depth="0.08" color="#261338" material="roughness: 0.25; metalness: 0.5"></a-box>
       <a-plane position="0 0 0.045" width="1.10" height="1.70"
@@ -865,7 +864,7 @@
 
     <!-- OBRA 1 (Izquierda) -->
     <a-entity id="grupo-1-obra-1"
-              obra-interactiva="titulo: Título de Obra 1; desc: Descripción del cuadro 1; link: #"
+              obra-interactiva="titulo: Título de Obra 1; desc: Descripción del cuadro 1; link: https://galerianebulosa.com/obras-destacadas/"
               position="-9.86 1.95 -18.11" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
@@ -878,7 +877,7 @@
 
     <!-- OBRA 2 (Izquierda - Centro) -->
     <a-entity id="grupo-1-obra-2"
-              obra-interactiva="titulo: Título de Obra 2; desc: Descripción del cuadro 2; link: #"
+              obra-interactiva="titulo: Título de Obra 2; desc: Descripción del cuadro 2; link: https://galerianebulosa.com/obras-destacadas/"
               position="-9.93 1.95 -20.81" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
@@ -891,7 +890,7 @@
 
     <!-- OBRA 3 (Izquierda) -->
     <a-entity id="grupo-1-obra-3"
-              obra-interactiva="titulo: Título de Obra 3; desc: Descripción del cuadro 3; link: #"
+              obra-interactiva="titulo: Título de Obra 3; desc: Descripción del cuadro 3; link: https://galerianebulosa.com/obras-destacadas/"
               position="-9.94 1.95 -23.51" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
@@ -909,7 +908,7 @@
 
     <!-- OBRA 4 (Derecha - Frente) -->
     <a-entity id="obra-4"
-              obra-interactiva="titulo: Título de Obra 4; desc: Descripción del cuadro 4; link: #"
+              obra-interactiva="titulo: Título de Obra 4; desc: Descripción del cuadro 4; link: https://galerianebulosa.com/obras-destacadas/"
               position="-0.16 2.05 -16.99" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
@@ -922,7 +921,7 @@
 
     <!-- OBRA 5 (Derecha - Centro) -->
     <a-entity id="obra-5"
-              obra-interactiva="titulo: Título de Obra 5; desc: Descripción del cuadro 5; link: #"
+              obra-interactiva="titulo: Título de Obra 5; desc: Descripción del cuadro 5; link: https://galerianebulosa.com/obras-destacadas/"
               position="-0.28 2.05 -20.06" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
@@ -935,7 +934,7 @@
 
     <!-- OBRA 6 (Derecha - Fondo) -->
     <a-entity id="obra-6"
-              obra-interactiva="titulo: Título de Obra 6; desc: Descripción del cuadro 6; link: #"
+              obra-interactiva="titulo: Título de Obra 6; desc: Descripción del cuadro 6; link: https://galerianebulosa.com/obras-destacadas/"
               position="-0.15 2.05 -23.12" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
@@ -953,7 +952,7 @@
 
     <!-- OBRA 7 (Fondo - Izquierda) -->
     <a-entity id="grupo-3-obra-7"
-              obra-interactiva="titulo: Título de Obra 7; desc: Descripción del cuadro 7; link: #"
+              obra-interactiva="titulo: Título de Obra 7; desc: Descripción del cuadro 7; link: https://galerianebulosa.com/obras-destacadas/"
               position="-8.00 2.03 -25.02" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
@@ -966,7 +965,7 @@
 
     <!-- OBRA 8 (Fondo - Centro de Honor Principal) -->
     <a-entity id="grupo-3-obra-8"
-              obra-interactiva="titulo: Título de Obra 8; desc: Descripción de la pieza central de honor.; link: #"
+              obra-interactiva="titulo: Título de Obra 8; desc: Descripción de la pieza central de honor.; link: https://galerianebulosa.com/obras-destacadas/"
               position="-4.94 2.00 -24.89" rotation="0 0 0">
       <a-box width="3.2" height="2.2" depth="0.10" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.055" width="3.05" height="2.05"
@@ -979,7 +978,7 @@
 
     <!-- OBRA 9 (Fondo - Derecha) -->
     <a-entity id="grupo-3-obra-9"
-              obra-interactiva="titulo: Título de Obra 9; desc: Descripción del cuadro 9; link: #"
+              obra-interactiva="titulo: Título de Obra 9; desc: Descripción del cuadro 9; link: https://galerianebulosa.com/obras-destacadas/"
               position="-1.88 2.06 -24.78" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
