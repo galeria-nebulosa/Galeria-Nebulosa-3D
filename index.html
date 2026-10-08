@@ -247,7 +247,7 @@
       top: 50% !important;
       transform: translateY(-50%) !important;
       background: #7c3aed !important;
-      color: #ffffff !important;
+      color: #ffffff;
       border: 2px solid rgba(255, 255, 255, 0.5) !important;
       border-radius: 8px !important;
       width: 26px !important;
@@ -333,7 +333,7 @@
           dz = -Math.cos(rad) * paso;
         } else if (tecla === 'ArrowDown') {
           dx = Math.sin(rad) * paso;
-          dz = -Math.cos(rad) * paso;
+          dz = Math.cos(rad) * paso;
         } else if (tecla === 'ArrowLeft') {
           dx = -Math.cos(rad) * paso;
           dz = Math.sin(rad) * paso;
@@ -1163,6 +1163,7 @@
     <a-entity id="grupo-5-obra-22"
               obra-interactiva="titulo: Título de Obra 22; desc: Descripción del cuadro 22; link: https://galerianebulosa.com/obras-destacadas/"
               position="20.00 2.05 0.54" rotation="0 -90 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; rotate="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 22; subtitulo: Grupo 5 - Lateral; src: ;">
