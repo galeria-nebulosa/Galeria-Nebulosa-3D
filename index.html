@@ -683,7 +683,7 @@
     <!-- MODELO 3D DE LA SALA -->
     <a-entity gltf-model="#modelo-sala" enhancer position="0 0 0"></a-entity>
 
-    <!-- RÓTULO EXTERIOR (Coordenadas ajustadas) -->
+    <!-- RÓTULO EXTERIOR -->
     <a-plane id="rotulo-exterior" position="-18.13 2.20 -4.89" rotation="0 0 0" width="3.6" height="0.9" rotulo-poppins></a-plane>
 
 
@@ -692,7 +692,7 @@
     <!-- ========================================================================= -->
 
     <!-- ========================================================================= -->
-    <!-- GRUPO 1: PARED IZQUIERDA (Coordenadas ajustadas)                          -->
+    <!-- GRUPO 1: PARED IZQUIERDA                                                  -->
     <!-- ========================================================================= -->
 
     <!-- CUADRO DE HONOR VERTICAL: GANADORES DE LOS PRIMEROS LUGARES -->
@@ -816,8 +816,8 @@
     </a-entity>
 
 
-    <!-- CÁMARA (Inicia adentro en el centro del salón, con giro libre por arrastre suave) -->
-    <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="0 2.2 -16">
+    <!-- CÁMARA (Inicia en el centro del pasillo con vista frontal a los cuadros) -->
+    <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="-5.0 2.05 -11.5" rotation="0 0 0">
       <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false;"></a-camera>
     </a-entity>
 
