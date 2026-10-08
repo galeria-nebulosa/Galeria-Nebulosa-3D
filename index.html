@@ -433,7 +433,10 @@
         'grupo-7-obra-34', 'grupo-7-obra-35', 'grupo-7-obra-36', 'grupo-7-obra-37',
         'grupo-7-obra-38', 'grupo-7-obra-39', 'grupo-7-obra-40', 'grupo-7-obra-41',
         'grupo-7-obra-42', 'grupo-7-obra-43', 'grupo-7-obra-44', 'grupo-7-obra-45',
-        'grupo-7-obra-46', 'grupo-7-obra-47', 'grupo-7-obra-48'
+        'grupo-7-obra-46', 'grupo-7-obra-47', 'grupo-7-obra-48',
+        'grupo-8-obra-49', 'grupo-8-obra-50', 'grupo-8-obra-51', 'grupo-8-obra-52',
+        'grupo-8-obra-53', 'grupo-8-obra-54', 'grupo-8-obra-55', 'grupo-8-obra-56',
+        'grupo-8-obra-57'
       ];
 
       elementosAGuardar.forEach(id => {
@@ -850,7 +853,7 @@
 
 
     <!-- ========================================================================= -->
-    <!-- ZONA CURATORIAL: 48 LIENZOS ORGANIZADOS EN 7 GRUPOS                       -->
+    <!-- ZONA CURATORIAL: 57 LIENZOS ORGANIZADOS EN 8 GRUPOS                       -->
     <!-- ========================================================================= -->
 
     <!-- ========================================================================= -->
@@ -1489,7 +1492,7 @@
     <!-- OBRA 46 (Pared Perpendicular - Sector 4) -->
     <a-entity id="grupo-7-obra-46"
               obra-interactiva="titulo: Título de Obra 46; desc: Descripción del cuadro 46; link: https://galerianebulosa.com/obras-destacadas/"
-              position="10.23 2.05 3.48" rotation="0 90 0">
+              position="10.23 2.05 3.14" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 46; subtitulo: Grupo 7; src: ;">
@@ -1502,7 +1505,7 @@
     <!-- OBRA 47 (Pared Perpendicular - Sector 5) -->
     <a-entity id="grupo-7-obra-47"
               obra-interactiva="titulo: Título de Obra 47; desc: Descripción del cuadro 47; link: https://galerianebulosa.com/obras-destacadas/"
-              position="10.23 2.05 0.68" rotation="0 90 0">
+              position="10.23 2.05 0.01" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 47; subtitulo: Grupo 7; src: ;">
@@ -1515,7 +1518,7 @@
     <!-- OBRA 48 (Pared Perpendicular - Sector 6) -->
     <a-entity id="grupo-7-obra-48"
               obra-interactiva="titulo: Título de Obra 48; desc: Descripción del cuadro 48; link: https://galerianebulosa.com/obras-destacadas/"
-              position="10.23 2.05 -2.12" rotation="0 90 0">
+              position="10.23 2.05 -3.13" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 48; subtitulo: Grupo 7; src: ;">
@@ -1526,12 +1529,116 @@
     </a-entity>
 
 
-    <!-- CÁMARA (Inicia en el centro del pasillo con vista frontal limpia) -->
-    <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="-5.0 2.05 -11.5" rotation="0 0 0">
-      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false;"></a-camera>
+    <!-- ========================================================================= -->
+    <!-- GRUPO 8: PARED PRINCIPAL DEL PASILLO (9 Obras: 49 al 57)                  -->
+    <!-- ========================================================================= -->
+
+    <!-- OBRA 49 -->
+    <a-entity id="grupo-8-obra-49"
+              obra-interactiva="titulo: Título de Obra 49; desc: Descripción del cuadro 49; link: https://galerianebulosa.com/obras-destacadas/"
+              position="8.80 2.05 -4.95" rotation="0 180 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 49; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 49; subtitulo: Grupo 8; src: ;">
+      </a-plane>
     </a-entity>
 
-  </a-scene>
+    <!-- OBRA 50 -->
+    <a-entity id="grupo-8-obra-50"
+              obra-interactiva="titulo: Título de Obra 50; desc: Descripción del cuadro 50; link: https://galerianebulosa.com/obras-destacadas/"
+              position="6.10 2.05 -4.95" rotation="0 180 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 50; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 50; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+    </a-entity>
 
-</body>
-</html>
+    <!-- OBRA 51 -->
+    <a-entity id="grupo-8-obra-51"
+              obra-interactiva="titulo: Título de Obra 51; desc: Descripción del cuadro 51; link: https://galerianebulosa.com/obras-destacadas/"
+              position="3.40 2.05 -4.95" rotation="0 180 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 51; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 51; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+    </a-entity>
+
+    <!-- OBRA 52 -->
+    <a-entity id="grupo-8-obra-52"
+              obra-interactiva="titulo: Título de Obra 52; desc: Descripción del cuadro 52; link: https://galerianebulosa.com/obras-destacadas/"
+              position="0.70 2.05 -4.95" rotation="0 180 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 52; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 52; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+    </a-entity>
+
+    <!-- OBRA 53 -->
+    <a-entity id="grupo-8-obra-53"
+              obra-interactiva="titulo: Título de Obra 53; desc: Descripción del cuadro 53; link: https://galerianebulosa.com/obras-destacadas/"
+              position="-2.00 2.05 -4.95" rotation="0 180 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 53; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 53; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+    </a-entity>
+
+    <!-- OBRA 54 -->
+    <a-entity id="grupo-8-obra-54"
+              obra-interactiva="titulo: Título de Obra 54; desc: Descripción del cuadro 54; link: https://galerianebulosa.com/obras-destacadas/"
+              position="-4.70 2.05 -4.95" rotation="0 180 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 54; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 54; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+    </a-entity>
+
+    <!-- OBRA 55 -->
+    <a-entity id="grupo-8-obra-55"
+              obra-interactiva="titulo: Título de Obra 55; desc: Descripción del cuadro 55; link: https://galerianebulosa.com/obras-destacadas/"
+              position="-7.40 2.05 -4.95" rotation="0 180 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 55; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 55; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+    </a-entity>
+
+    <!-- OBRA 56 -->
+    <a-entity id="grupo-8-obra-56"
+              obra-interactiva="titulo: Título de Obra 56; desc: Descripción del cuadro 56; link: https://galerianebulosa.com/obras-destacadas/"
+              position="-10.10 2.05 -4.95" rotation="0 180 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.045" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 56; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+      <a-plane position="0 0 -0.045" rotation="0 180 0" width="2.35" height="1.65"
+               lienzo-obra="titulo: OBRA 56; subtitulo: Grupo 8; src: ;">
+      </a-plane>
+    </a-entity>
+
+    <!-- OBRA 57 -->
+    <a-entity id="grupo-8-obra-57"
+              obra-interactiva="titulo: Título de Obra 57; desc: Descripción del cuadro 57; link: https://galerianebulosa.com/obras-destacadas/"
+              position="-12.80 2.05 -4.95" rotation="0 180 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metal
