@@ -246,6 +246,7 @@
       color: #f5f5fa;
       cursor: pointer !important;
       transition: all 0.1s ease;
+      touch-action: manipulation;
     }
     .key-cap:hover {
       background: #3b3b54;
@@ -319,6 +320,7 @@
       }
     });
 
+    // MOVIMIENTO POR PASO EXACTO (SOLUCIONA EL DESLIZAMIENTO INFINITO EN MÓVIL Y PC)
     function moverConBoton(tecla) {
       const cameraRig = document.querySelector('#rig');
       if (cameraRig) {
@@ -344,7 +346,6 @@
         const p = cameraRig.getAttribute('position');
         cameraRig.setAttribute('position', { x: p.x + dx, y: p.y, z: p.z + dz });
       }
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: tecla, code: tecla, bubbles: true }));
     }
 
     AFRAME.registerComponent('obra-interactiva', {
@@ -451,7 +452,7 @@
       }
     });
 
-    // COMPONENTE DE LIENZO DE OBRA CON SOPORTE AUTOMÁTICO CORS Y RESPALDO
+    // COMPONENTE DE LIENZO DE OBRA CON COMPATIBILIDAD CORS TOTAL
     AFRAME.registerComponent('lienzo-obra', {
       schema: {
         titulo: { type: 'string', default: 'OBRA DISPONIBLE' },
@@ -513,7 +514,6 @@
           if (urlLimpia.startsWith('http://')) {
             urlLimpia = 'https://' + urlLimpia.substring(7);
           }
-          // Compatibilidad CORS total para servidores externos/WordPress
           let urlCORS = urlLimpia;
           if (urlLimpia.includes('galerianebulosa.com') || urlLimpia.includes('wp-content')) {
             urlCORS = 'https://images.weserv.nl/?url=' + encodeURIComponent(urlLimpia);
@@ -836,10 +836,6 @@
 
     <!-- ========================================================================================================= -->
     <!--                                  INICIO: CONFIGURACIÓN DE OBRAS Y ENLACES                                 -->
-    <!--                                                                                                           -->
-    <!-- Instrucciones:                                                                                            -->
-    <!-- • Para cambiar una imagen: pega el enlace directo en `src: TU_ENLACE;`                                    -->
-    <!-- • Para editar la ventana emergente: edita `titulo`, `desc` y `link`                                       -->
     <!-- ========================================================================================================= -->
 
 
@@ -863,7 +859,7 @@
               position="-9.86 1.95 -18.11" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 1; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 1; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -873,7 +869,7 @@
               position="-9.93 1.95 -20.81" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 2; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 2; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -883,7 +879,7 @@
               position="-9.94 1.95 -23.51" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 3; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 3; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -898,7 +894,7 @@
               position="-0.16 2.05 -16.99" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 4; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 4; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -908,7 +904,7 @@
               position="-0.28 2.05 -20.06" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 5; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 5; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -918,7 +914,7 @@
               position="-0.15 2.05 -23.12" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 6; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 6; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -933,17 +929,17 @@
               position="-8.00 2.03 -25.02" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 7; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 7; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 8 -->
     <a-entity id="grupo-3-obra-8"
-              obra-interactiva="titulo: Título de Obra 8; desc: Descripción de la pieza central de honor.; link: https://galerianebulosa.com/obras-destacadas/"
+              obra-interactiva="titulo: Título de Obra 8; desc: Descripción del cuadro 8; link: https://galerianebulosa.com/obras-destacadas/"
               position="-4.94 2.00 -24.89" rotation="0 0 0">
       <a-box width="3.2" height="2.2" depth="0.10" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.062" width="3.05" height="2.05"
-               lienzo-obra="titulo: OBRA 8; subtitulo: Espacio Principal; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 8; subtitulo: Espacio Principal; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -953,7 +949,7 @@
               position="-1.88 2.06 -24.78" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 9; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 9; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -968,7 +964,7 @@
               position="1.55 2.05 -14.98" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 10; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 10; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -978,7 +974,7 @@
               position="4.32 2.05 -15.02" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 11; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 11; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -988,7 +984,7 @@
               position="7.14 2.05 -15.02" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 12; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 12; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -998,7 +994,7 @@
               position="9.93 2.05 -14.90" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 13; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 13; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1008,7 +1004,7 @@
               position="12.77 2.05 -14.92" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 14; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 14; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1018,7 +1014,7 @@
               position="15.60 2.05 -14.91" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 15; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 15; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1028,7 +1024,7 @@
               position="18.33 2.05 -14.85" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 16; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 16; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1043,7 +1039,7 @@
               position="20.00 2.05 -13.46" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 17; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 17; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1053,7 +1049,7 @@
               position="20.00 2.05 -10.66" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 18; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 18; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1063,7 +1059,7 @@
               position="20.00 2.05 -7.86" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 19; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 19; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1073,7 +1069,7 @@
               position="20.00 2.05 -5.06" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 20; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 20; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1083,7 +1079,7 @@
               position="20.00 2.05 -2.26" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 21; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 21; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1094,7 +1090,7 @@
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; rotate="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 22; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 22; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1104,7 +1100,7 @@
               position="20.00 2.05 3.34" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 23; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 23; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1114,7 +1110,7 @@
               position="20.00 2.05 6.14" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 24; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 24; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1124,7 +1120,7 @@
               position="20.00 2.05 8.94" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 25; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 25; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1134,7 +1130,7 @@
               position="20.00 2.05 11.74" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 26; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 26; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1144,7 +1140,7 @@
               position="20.00 2.05 14.54" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 27; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 27; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1154,7 +1150,7 @@
               position="20.00 2.05 17.34" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 28; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 28; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1164,7 +1160,7 @@
               position="20.00 2.05 20.14" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 29; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 29; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1174,7 +1170,7 @@
               position="20.00 2.05 22.94" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 30; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 30; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1189,7 +1185,7 @@
               position="17.70 2.05 24.94" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 31; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 31; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1199,7 +1195,7 @@
               position="14.90 2.05 24.99" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 32; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 32; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1209,7 +1205,7 @@
               position="12.10 2.05 24.95" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 33; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 33; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1224,7 +1220,7 @@
               position="10.26 2.13 22.93" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 34; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 34; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1234,7 +1230,7 @@
               position="10.15 2.05 20.04" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 35; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 35; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1244,7 +1240,7 @@
               position="9.98 2.05 17.06" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 36; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 36; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1254,7 +1250,7 @@
               position="8.34 2.05 15.03" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 37; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 37; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1264,7 +1260,7 @@
               position="5.14 2.05 14.96" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 38; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 38; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1274,7 +1270,7 @@
               position="1.90 2.05 14.90" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 39; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 39; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1284,7 +1280,7 @@
               position="0.01 2.05 13.20" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 40; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 40; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1294,7 +1290,7 @@
               position="0.01 2.05 10.19" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 41; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 41; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1304,7 +1300,7 @@
               position="0.01 2.05 7.16" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 42; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 42; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1314,7 +1310,7 @@
               position="1.63 2.05 5.03" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 43; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 43; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1324,7 +1320,7 @@
               position="4.96 2.05 5.03" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 44; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 44; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1334,7 +1330,7 @@
               position="8.23 2.05 5.03" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 45; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 45; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1344,7 +1340,7 @@
               position="10.23 2.05 3.14" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 46; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 46; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1354,7 +1350,7 @@
               position="10.23 2.05 0.01" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 47; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 47; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1364,7 +1360,7 @@
               position="10.23 2.05 -3.13" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 48; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 48; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1379,7 +1375,7 @@
               position="8.46 2.05 -5.00" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 49; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 49; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1389,7 +1385,7 @@
               position="5.66 2.05 -5.01" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 50; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 50; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1399,7 +1395,7 @@
               position="2.80 2.05 -5.00" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 51; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 51; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1409,7 +1405,7 @@
               position="-0.04 2.05 -5.08" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 52; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 52; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1419,7 +1415,7 @@
               position="-2.85 2.05 -5.00" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 53; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 53; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1429,7 +1425,7 @@
               position="-5.68 2.05 -4.97" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 54; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 54; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1439,7 +1435,7 @@
               position="-8.51 2.05 -4.97" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 55; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 55; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1449,7 +1445,7 @@
               position="-11.36 2.06 -5.08" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 56; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 56; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1459,7 +1455,7 @@
               position="-14.14 2.05 -5.01" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 57; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 57; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1469,7 +1465,7 @@
               position="-16.94 2.05 -5.01" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 58; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 58; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1484,7 +1480,7 @@
               position="-17.63 2.05 -15.03" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 59; subtitulo: Grupo 9; src: https://galerianebulosa.com/wp-content/uploads/2026/09/The-Judgment-of-the-Blue-Dragon_Violeta-Michelle-Cortez-Surio-1-1.png;">
+               lienzo-obra="titulo: OBRA 59; subtitulo: Grupo 9; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1494,7 +1490,7 @@
               position="-14.93 2.05 -15.03" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 60; subtitulo: Grupo 9; src: https://galerianebulosa.com/wp-content/uploads/2026/09/Burbuja-rota-El-despertar-del-fenix-scaled.jpg;">
+               lienzo-obra="titulo: OBRA 60; subtitulo: Grupo 9; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1504,7 +1500,7 @@
               position="-12.23 2.05 -15.03" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 61; subtitulo: Grupo 9; src: https://galerianebulosa.com/wp-content/uploads/2026/09/acercamiento-del-personaje.jpg;">
+               lienzo-obra="titulo: OBRA 61; subtitulo: Grupo 9; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -1534,3 +1530,5 @@
 
 </body>
 </html>
+
+```
