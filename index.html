@@ -195,7 +195,7 @@
       top: 50%;
       transform: translateY(-50%);
       right: 20px;
-      background: rgba(14, 14, 20, 0.90);
+      background: rgba(14, 14, 20, 0.92);
       backdrop-filter: blur(14px);
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 16px;
@@ -207,7 +207,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       user-select: none;
       cursor: default !important;
     }
@@ -264,7 +264,7 @@
       font-size: 11px;
       text-align: center;
       color: #dcdcfa;
-      gap: 6px;
+      gap: 5px;
     }
 
     .mouse-icon {
@@ -284,6 +284,32 @@
       height: 7px;
       background: #ffffff;
       border-radius: 2px;
+    }
+
+    /* BOTÓN DINÁMICO: SALIR A LA NEBULOSA / VOLVER A LA GALERÍA */
+    #btn-toggle-nebulosa {
+      width: 100%;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer !important;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
+      transition: all 0.2s ease;
+      text-align: center;
+      touch-action: manipulation;
+    }
+    #btn-toggle-nebulosa:hover {
+      transform: scale(1.03);
+    }
+    #btn-toggle-nebulosa.afuera {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
     }
   </style>
 
@@ -320,31 +346,63 @@
       }
     });
 
-    // MOVIMIENTO POR PASO EXACTO (SOLUCIONA EL DESLIZAMIENTO INFINITO EN MÓVIL Y PC)
+    // MOVIMIENTO RELATIVO A HACIA DÓNDE MIRA LA CÁMARA (CORRIGE ROTACIÓN INVERTIDA)
     function moverConBoton(tecla) {
       const cameraRig = document.querySelector('#rig');
-      if (cameraRig) {
-        const rot = cameraRig.getAttribute('rotation') || { y: 0 };
-        const rad = THREE.MathUtils.degToRad(rot.y);
+      const cameraEl = document.querySelector('a-camera');
+      if (cameraRig && cameraEl && cameraEl.object3D) {
+        const dir = new THREE.Vector3();
+        cameraEl.object3D.getWorldDirection(dir);
+        dir.y = 0;
+        dir.normalize();
+
         const paso = 0.8;
         let dx = 0, dz = 0;
 
         if (tecla === 'ArrowUp') {
-          dx = -Math.sin(rad) * paso;
-          dz = -Math.cos(rad) * paso;
+          dx = -dir.x * paso;
+          dz = -dir.z * paso;
         } else if (tecla === 'ArrowDown') {
-          dx = Math.sin(rad) * paso;
-          dz = Math.cos(rad) * paso;
+          dx = dir.x * paso;
+          dz = dir.z * paso;
         } else if (tecla === 'ArrowLeft') {
-          dx = -Math.cos(rad) * paso;
-          dz = Math.sin(rad) * paso;
+          dx = -dir.z * paso;
+          dz = dir.x * paso;
         } else if (tecla === 'ArrowRight') {
-          dx = Math.cos(rad) * paso;
-          dz = -Math.sin(rad) * paso;
+          dx = dir.z * paso;
+          dz = -dir.x * paso;
         }
 
         const p = cameraRig.getAttribute('position');
         cameraRig.setAttribute('position', { x: p.x + dx, y: p.y, z: p.z + dz });
+      }
+    }
+
+    // CONTROL INTELIGENTE DE ENTRADA Y SALIDA A LA NEBULOSA
+    let enLaNebulosa = false;
+    let ultimaPosicionGaleria = { x: -12.5, y: 2.05, z: -10.0 };
+
+    function alternarNebulosa() {
+      const cameraRig = document.querySelector('#rig');
+      const btn = document.getElementById('btn-toggle-nebulosa');
+      if (!cameraRig || !btn) return;
+
+      if (!enLaNebulosa) {
+        // Guardar posición actual antes de salir
+        const posActual = cameraRig.getAttribute('position');
+        ultimaPosicionGaleria = { x: posActual.x, y: posActual.y, z: posActual.z };
+
+        // Teletransportar al mirador exterior de la Nebulosa
+        cameraRig.setAttribute('position', { x: 0, y: 15.0, z: 22.0 });
+        enLaNebulosa = true;
+        btn.textContent = '🏛️ Volver a la Galería';
+        btn.classList.add('afuera');
+      } else {
+        // Regresar a la galería
+        cameraRig.setAttribute('position', ultimaPosicionGaleria);
+        enLaNebulosa = false;
+        btn.textContent = '🌌 Salir a la Nebulosa';
+        btn.classList.remove('afuera');
       }
     }
 
@@ -432,7 +490,6 @@
             mesh.material = new THREE.MeshBasicMaterial({ 
               map: texture, 
               side: THREE.FrontSide,
-              toneMapped: false,
               polygonOffset: true,
               polygonOffsetFactor: -1,
               polygonOffsetUnits: -1
@@ -471,7 +528,7 @@
             mesh.material = new THREE.MeshBasicMaterial({ 
               map: texture, 
               side: THREE.FrontSide,
-              toneMapped: false, // MANTIENE LOS COLORES Y BRILLOS ORIGINALES EXACTOS
+              toneMapped: false,
               polygonOffset: true,
               polygonOffsetFactor: -1,
               polygonOffsetUnits: -1
@@ -790,8 +847,13 @@
 
     <div class="guide-item">
       <div class="mouse-icon"></div>
-      <span>Girar 360°<br>(Arrastrar mouse)</span>
+      <span>Girar 360°<br>(Arrastrar mouse / dedo)</span>
     </div>
+
+    <div style="width: 80%; height: 1px; background: rgba(255,255,255,0.15);"></div>
+
+    <!-- BOTÓN PARA SALIR A LA NEBULOSA O REGRESAR A LA GALERÍA -->
+    <button id="btn-toggle-nebulosa" onclick="alternarNebulosa()">🌌 Salir a la Nebulosa</button>
   </div>
 
   <!-- ESCENA CON BÚFER LOGARÍTMICO PARA ELIMINAR PARPADEO DE SOMBRAS A LA DISTANCIA -->
@@ -1523,7 +1585,7 @@
 
 
     <!-- ========================================================================= -->
-    <!-- CÁMARA / PUNTO DE INICIO (Separado el giro táctil del desplazamiento)      -->
+    <!-- CÁMARA / PUNTO DE INICIO                                                  -->
     <!-- ========================================================================= -->
     <a-entity id="rig" movement-controls="controls: keyboard; speed: 0.35; constrainToNavMesh: false;" position="-12.5 2.05 -10.0" rotation="0 90 0">
       <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false; touchEnabled: true;"></a-camera>
