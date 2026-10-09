@@ -432,6 +432,7 @@
             mesh.material = new THREE.MeshBasicMaterial({ 
               map: texture, 
               side: THREE.FrontSide,
+              toneMapped: false,
               polygonOffset: true,
               polygonOffsetFactor: -1,
               polygonOffsetUnits: -1
@@ -452,7 +453,7 @@
       }
     });
 
-    // COMPONENTE DE LIENZO DE OBRA CON COMPATIBILIDAD CORS TOTAL
+    // COMPONENTE DE LIENZO DE OBRA CON COLOR NATURAL (toneMapped = false) Y SOPORTE CORS
     AFRAME.registerComponent('lienzo-obra', {
       schema: {
         titulo: { type: 'string', default: 'OBRA DISPONIBLE' },
@@ -470,6 +471,7 @@
             mesh.material = new THREE.MeshBasicMaterial({ 
               map: texture, 
               side: THREE.FrontSide,
+              toneMapped: false, // MANTIENE LOS COLORES Y BRILLOS ORIGINALES EXACTOS
               polygonOffset: true,
               polygonOffsetFactor: -1,
               polygonOffsetUnits: -1
@@ -614,6 +616,7 @@
           mesh.material = new THREE.MeshBasicMaterial({ 
             map: texture, 
             side: THREE.FrontSide,
+            toneMapped: false,
             polygonOffset: true,
             polygonOffsetFactor: -1,
             polygonOffsetUnits: -1
@@ -935,7 +938,7 @@
 
     <!-- OBRA 8 -->
     <a-entity id="grupo-3-obra-8"
-              obra-interactiva="titulo: Título de Obra 8; desc: Descripción del cuadro 8; link: https://galerianebulosa.com/obras-destacadas/"
+              obra-interactiva="titulo: Título de Obra 8; desc: Descripción de la pieza central de honor.; link: https://galerianebulosa.com/obras-destacadas/"
               position="-4.94 2.00 -24.89" rotation="0 0 0">
       <a-box width="3.2" height="2.2" depth="0.10" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.062" width="3.05" height="2.05"
@@ -1244,7 +1247,7 @@
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 37 (CORREGIDA ROTACIÓN PARA MIRAR HACIA LA SALA) -->
+    <!-- OBRA 37 -->
     <a-entity id="grupo-7-obra-37"
               obra-interactiva="titulo: Título de Obra 37; desc: Descripción del cuadro 37; link: https://galerianebulosa.com/obras-destacadas/"
               position="8.34 2.05 15.03" rotation="0 180 0">
@@ -1254,7 +1257,7 @@
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 38 (CORREGIDA ROTACIÓN PARA MIRAR HACIA LA SALA) -->
+    <!-- OBRA 38 -->
     <a-entity id="grupo-7-obra-38"
               obra-interactiva="titulo: Título de Obra 38; desc: Descripción del cuadro 38; link: https://galerianebulosa.com/obras-destacadas/"
               position="5.14 2.05 14.96" rotation="0 180 0">
@@ -1264,7 +1267,7 @@
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 39 (CORREGIDA ROTACIÓN PARA MIRAR HACIA LA SALA) -->
+    <!-- OBRA 39 -->
     <a-entity id="grupo-7-obra-39"
               obra-interactiva="titulo: Título de Obra 39; desc: Descripción del cuadro 39; link: https://galerianebulosa.com/obras-destacadas/"
               position="1.90 2.05 14.90" rotation="0 180 0">
@@ -1474,7 +1477,7 @@
     <!-- SECCIÓN: GRUPO 9 - PARED TESTERA DEL PASILLO (Obras 59 al 61)             -->
     <!-- ========================================================================= -->
 
-    <!-- OBRA 59 (CORREGIDA ROTACIÓN PARA MIRAR AL PASILLO) -->
+    <!-- OBRA 59 -->
     <a-entity id="grupo-9-obra-59"
               obra-interactiva="titulo: Título de Obra 59; desc: Descripción del cuadro 59; link: https://galerianebulosa.com/obras-destacadas/"
               position="-17.63 2.05 -15.03" rotation="0 0 0">
@@ -1484,7 +1487,7 @@
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 60 (CORREGIDA ROTACIÓN PARA MIRAR AL PASILLO) -->
+    <!-- OBRA 60 -->
     <a-entity id="grupo-9-obra-60"
               obra-interactiva="titulo: Título de Obra 60; desc: Descripción del cuadro 60; link: https://galerianebulosa.com/obras-destacadas/"
               position="-14.93 2.05 -15.03" rotation="0 0 0">
@@ -1494,7 +1497,7 @@
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 61 (CORREGIDA ROTACIÓN PARA MIRAR AL PASILLO) -->
+    <!-- OBRA 61 -->
     <a-entity id="grupo-9-obra-61"
               obra-interactiva="titulo: Título de Obra 61; desc: Descripción del cuadro 61; link: https://galerianebulosa.com/obras-destacadas/"
               position="-12.23 2.05 -15.03" rotation="0 0 0">
@@ -1520,15 +1523,13 @@
 
 
     <!-- ========================================================================= -->
-    <!-- CÁMARA / PUNTO DE INICIO (De frente al video de introducción)             -->
+    <!-- CÁMARA / PUNTO DE INICIO (Separado el giro táctil del desplazamiento)      -->
     <!-- ========================================================================= -->
-    <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="-12.5 2.05 -10.0" rotation="0 90 0">
-      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false;"></a-camera>
+    <a-entity id="rig" movement-controls="controls: keyboard; speed: 0.35; constrainToNavMesh: false;" position="-12.5 2.05 -10.0" rotation="0 90 0">
+      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false; touchEnabled: true;"></a-camera>
     </a-entity>
 
   </a-scene>
 
 </body>
 </html>
-
-```
