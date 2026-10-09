@@ -416,7 +416,7 @@
           dz = -Math.cos(rad) * paso;
         } else if (tecla === 'ArrowDown') {
           dx = Math.sin(rad) * paso;
-          dz = -Math.cos(rad) * paso;
+          dz = Math.cos(rad) * paso;
         } else if (tecla === 'ArrowLeft') {
           dx = -Math.cos(rad) * paso;
           dz = Math.sin(rad) * paso;
@@ -1847,7 +1847,7 @@
     <!-- OBRA 59 (Grupo 9) -->
     <a-entity id="grupo-9-obra-59"
               obra-interactiva="titulo: Título de Obra 59; desc: Descripción del cuadro 59; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-18.08 2.05 -15.03" rotation="0 180 0">
+              position="-17.63 2.05 -15.03" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 59; subtitulo: Grupo 9; src: ;">
@@ -1860,7 +1860,7 @@
     <!-- OBRA 60 (Grupo 9) -->
     <a-entity id="grupo-9-obra-60"
               obra-interactiva="titulo: Título de Obra 60; desc: Descripción del cuadro 60; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-15.28 2.05 -15.03" rotation="0 180 0">
+              position="-14.93 2.05 -15.03" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 60; subtitulo: Grupo 9; src: ;">
@@ -1873,7 +1873,7 @@
     <!-- OBRA 61 (Grupo 9) -->
     <a-entity id="grupo-9-obra-61"
               obra-interactiva="titulo: Título de Obra 61; desc: Descripción del cuadro 61; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-12.48 2.05 -15.03" rotation="0 180 0">
+              position="-12.23 2.05 -15.03" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 61; subtitulo: Grupo 9; src: ;">
@@ -1883,9 +1883,9 @@
       </a-plane>
     </a-entity>
 
-    <!-- PANTALLA DE VIDEO YOUTUBE (Integrada en la pared destacada) -->
+    <!-- PANTALLA DE VIDEO YOUTUBE (Alineada recta en la pared del fondo) -->
     <a-entity id="pantalla-video-presentacion"
-              position="-19.63 2.02 -10.20" rotation="0 100 0">
+              position="-19.66 2.02 -10.20" rotation="0 90 0">
       <!-- Marco exterior estilo Artsteps -->
       <a-box width="3.90" height="2.30" depth="0.09" color="#0f0c18" material="roughness: 0.3; metalness: 0.6"></a-box>
       <!-- Borde de iluminación morada tenue -->
@@ -1900,8 +1900,8 @@
     </a-entity>
 
 
-    <!-- CÁMARA (Inicia en el centro del pasillo con vista frontal limpia) -->
-    <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="-5.0 2.05 -11.5" rotation="0 0 0">
+    <!-- CÁMARA (Inicia en el pasillo con vista frontal directa a la pantalla de video) -->
+    <a-entity id="rig" movement-controls="speed: 0.35; constrainToNavMesh: false;" position="-12.5 2.05 -10.0" rotation="0 -90 0">
       <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false;"></a-camera>
     </a-entity>
 
