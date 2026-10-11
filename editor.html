@@ -1004,9 +1004,9 @@
     <a-assets timeout="10000">
       <a-asset-item id="modelo-sala" src="galeria.glb"></a-asset-item>
       
-      <!-- MODELOS 3D DE LOS TROFEOS CON DOBLE COMPATIBILIDAD URL -->
+      <!-- MODELOS 3D DE LOS TROFEOS -->
       <a-asset-item id="trofeo-oro" src="Trofeo del primer lugar.glb"></a-asset-item>
-      <a-asset-item id="trofeo-plata" src="Trofeo%20de%20estrella%20del%20segundo%20lugar.glb"></a-asset-item>
+      <a-asset-item id="trofeo-plata" src="Trofeo de estrella del segundo lugar.glb"></a-asset-item>
       <a-asset-item id="trofeo-bronce" src="Trofeo de estrella del tercer lugar.glb"></a-asset-item>
       
       <video id="video-nebulosa" 
@@ -1915,21 +1915,21 @@
 
 
     <!-- ========================================================================= -->
-    <!-- TROFEOS EDITABLES DE LOS GANADORES (AL FINAL DE LA LISTA / FLECHA VERDE)  -->
+    <!-- TROFEOS EDITABLES DE LOS GANADORES (COORDENADAS ACTUALIZADAS)             -->
     <!-- ========================================================================= -->
 
     <!-- TROFEO 1.ER LUGAR (ORO) -->
     <a-entity id="trofeo-primer-lugar"
               gltf-model="#trofeo-oro"
-              position="-8.20 0.85 -16.08"
-              rotation="0 90 0"
+              position="-9.71 0.85 -14.96"
+              rotation="0 -90 0"
               scale="0.65 0.65 0.65">
     </a-entity>
 
-    <!-- TROFEO 2.º LUGAR (PLATA) - Carga directa forzada -->
+    <!-- TROFEO 2.º LUGAR (PLATA) -->
     <a-entity id="trofeo-segundo-lugar"
-              gltf-model="Trofeo de estrella del segundo lugar.glb"
-              position="-8.20 0.75 -15.10"
+              gltf-model="#trofeo-plata"
+              position="-0.75 0.75 -15.58"
               rotation="0 90 0"
               scale="0.60 0.60 0.60">
     </a-entity>
@@ -1937,8 +1937,8 @@
     <!-- TROFEO 3.ER LUGAR (BRONCE) -->
     <a-entity id="trofeo-tercer-lugar"
               gltf-model="#trofeo-bronce"
-              position="-8.20 0.65 -17.06"
-              rotation="0 90 0"
+              position="-8.88 0.65 -24.52"
+              rotation="0 -170 0"
               scale="0.55 0.55 0.55">
     </a-entity>
 
