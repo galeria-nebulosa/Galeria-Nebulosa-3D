@@ -346,7 +346,7 @@
       }
     });
 
-    // MOVIMIENTO RELATIVO A HACIA DÓNDE MIRA LA CÁMARA (CORRIGE ROTACIÓN INVERTIDA)
+    // MOVIMIENTO RELATIVO A HACIA DÓNDE MIRA LA CÁMARA
     function moverConBoton(tecla) {
       const cameraRig = document.querySelector('#rig');
       const cameraEl = document.querySelector('a-camera');
@@ -388,17 +388,13 @@
       if (!cameraRig || !btn) return;
 
       if (!enLaNebulosa) {
-        // Guardar posición actual antes de salir
         const posActual = cameraRig.getAttribute('position');
         ultimaPosicionGaleria = { x: posActual.x, y: posActual.y, z: posActual.z };
-
-        // Teletransportar al mirador exterior de la Nebulosa
         cameraRig.setAttribute('position', { x: 0, y: 15.0, z: 22.0 });
         enLaNebulosa = true;
         btn.textContent = '🏛️ Volver a la Galería';
         btn.classList.add('afuera');
       } else {
-        // Regresar a la galería
         cameraRig.setAttribute('position', ultimaPosicionGaleria);
         enLaNebulosa = false;
         btn.textContent = '🌌 Salir a la Nebulosa';
@@ -510,7 +506,6 @@
       }
     });
 
-    // COMPONENTE DE LIENZO DE OBRA CON COLOR NATURAL (toneMapped = false) Y SOPORTE CORS
     AFRAME.registerComponent('lienzo-obra', {
       schema: {
         titulo: { type: 'string', default: 'OBRA DISPONIBLE' },
@@ -856,15 +851,20 @@
     <button id="btn-toggle-nebulosa" onclick="alternarNebulosa()">🌌 Salir a la Nebulosa</button>
   </div>
 
-  <!-- ESCENA CON BÚFER LOGARÍTMICO PARA ELIMINAR PARPADEO DE SOMBRAS A LA DISTANCIA -->
+  <!-- ESCENA PÚBLICA -->
   <a-scene 
     video-handler
     cursor="rayOrigin: mouse;"
     raycaster="objects: .clickable;"
-    renderer="logarithmicDepthBuffer: true; colorManagement: true; physicallyCorrectLights: true; exposure: 1.25; toneMapping: ACESFilmic;">
+    renderer="logarithmicDepthBuffer: true; colorManagement: true; physicallyCorrectLights: true; exposure: 1.0; toneMapping: ACESFilmic;">
 
     <a-assets timeout="10000">
       <a-asset-item id="modelo-sala" src="galeria.glb"></a-asset-item>
+      
+      <!-- MODELOS 3D DE LOS TROFEOS -->
+      <a-asset-item id="trofeo-oro" src="Trofeo del primer lugar.glb"></a-asset-item>
+      <a-asset-item id="trofeo-plata" src="Trofeo de estrella del segundo lugar.glb"></a-asset-item>
+      <a-asset-item id="trofeo-bronce" src="Trofeo de estrella del tercer lugar.glb"></a-asset-item>
       
       <video id="video-nebulosa" 
              src="nebulosa.mp4" 
@@ -881,16 +881,16 @@
     <a-videosphere src="#video-nebulosa" rotation="0 -90 0"></a-videosphere>
 
     <!-- ILUMINACIÓN AMBIENTAL DE LA SALA -->
-    <a-entity light="type: ambient; color: #f0f2fa; intensity: 1.1;"></a-entity>
-    <a-entity light="type: hemisphere; groundColor: #282835; color: #ffffff; intensity: 1.1;"></a-entity>
+    <a-entity light="type: ambient; color: #f0f2fa; intensity: 1.0;"></a-entity>
+    <a-entity light="type: hemisphere; groundColor: #282835; color: #ffffff; intensity: 1.0;"></a-entity>
 
     <!-- LUZ CENITAL DESDE LA CÚPULA -->
-    <a-entity light="type: directional; color: #ffffff; intensity: 1.4;" position="0 25 -16"></a-entity>
+    <a-entity light="type: directional; color: #ffffff; intensity: 1.2;" position="0 25 -16"></a-entity>
 
     <!-- CONOS DE LUZ CÁLIDA SOBRE LAS PAREDES -->
-    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="-6 7.5 -16" rotation="-65 -90 0"></a-entity>
-    <a-entity light="type: spot; color: #fff1d6; intensity: 6.0; angle: 50; penumbra: 0.7; distance: 28;" position="6 7.5 -16" rotation="-65 90 0"></a-entity>
-    <a-entity light="type: spot; color: #fff1d6; intensity: 6.5; angle: 52; penumbra: 0.7; distance: 35;" position="0 8.0 -22" rotation="-55 0 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 4.5; angle: 50; penumbra: 0.7; distance: 28;" position="-6 7.5 -16" rotation="-65 -90 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 4.5; angle: 50; penumbra: 0.7; distance: 28;" position="6 7.5 -16" rotation="-65 90 0"></a-entity>
+    <a-entity light="type: spot; color: #fff1d6; intensity: 5.0; angle: 52; penumbra: 0.7; distance: 35;" position="0 8.0 -22" rotation="-55 0 0"></a-entity>
 
     <!-- MODELO 3D DE LA SALA -->
     <a-entity gltf-model="#modelo-sala" enhancer position="0 0 0"></a-entity>
@@ -900,13 +900,13 @@
 
 
     <!-- ========================================================================================================= -->
-    <!--                                  INICIO: CONFIGURACIÓN DE OBRAS Y ENLACES                                 -->
+    <!--                                   INICIO: CONFIGURACIÓN DE OBRAS Y ENLACES                                -->
     <!-- ========================================================================================================= -->
 
 
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
     <!-- SECCIÓN: GRUPO 1 - PARED IZQUIERDA (Obras 1 al 3 + Cuadro de Honor)       -->
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
 
     <!-- CUADRO DE HONOR -->
     <a-entity id="grupo-1-cuadro-honor"
@@ -998,12 +998,12 @@
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 8 -->
+    <!-- OBRA 8 (Homologada al tamaño estándar 2.5 x 1.8) -->
     <a-entity id="grupo-3-obra-8"
               obra-interactiva="titulo: Título de Obra 8; desc: Descripción de la pieza central de honor.; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-4.94 2.00 -24.89" rotation="0 0 0">
-      <a-box width="3.2" height="2.2" depth="0.10" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.062" width="3.05" height="2.05"
+              position="-4.94 2.05 -24.89" rotation="0 0 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
+      <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 8; subtitulo: Espacio Principal; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
@@ -1019,9 +1019,9 @@
     </a-entity>
 
 
-    <!-- ========================================================================= -->
-    <!-- SECCIÓN: GRUPO 4 - PARED LATERAL DERECHA (Obras 10 al 16)                -->
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
+    <!-- SECCIÓN: GRUPO 4 - PARED LATERAL DERECHA (Obras 10 al 16) -->
+    <!-- ========================================================= -->
 
     <!-- OBRA 10 -->
     <a-entity id="grupo-4-obra-10"
@@ -1094,9 +1094,9 @@
     </a-entity>
 
 
-    <!-- ========================================================================= -->
-    <!-- SECCIÓN: GRUPO 5 - PARED PERPENDICULAR DERECHA (Obras 17 al 30)           -->
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
+    <!-- SECCIÓN: GRUPO 5 - PARED PERPENDICULAR DERECHA (Obras 17 al 30) -->
+    <!-- ========================================================= -->
 
     <!-- OBRA 17 -->
     <a-entity id="grupo-5-obra-17"
@@ -1152,7 +1152,6 @@
     <a-entity id="grupo-5-obra-22"
               obra-interactiva="titulo: Título de Obra 22; desc: Descripción del cuadro 22; link: https://galerianebulosa.com/obras-destacadas/"
               position="20.00 2.05 0.54" rotation="0 -90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; rotate="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 22; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
@@ -1240,9 +1239,9 @@
     </a-entity>
 
 
-    <!-- ========================================================================= -->
-    <!-- SECCIÓN: GRUPO 6 - MURO DE CIERRE PERPENDICULAR (Obras 31 al 33)          -->
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
+    <!-- SECCIÓN: GRUPO 6 - MURO DE CIERRE PERPENDICULAR (Obras 31 al 33) -->
+    <!-- ========================================================= -->
 
     <!-- OBRA 31 -->
     <a-entity id="grupo-6-obra-31"
@@ -1275,9 +1274,9 @@
     </a-entity>
 
 
-    <!-- ========================================================================= -->
-    <!-- SECCIÓN: GRUPO 7 - PAREDES EN "L" (Obras 34 al 48)                        -->
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
+    <!-- SECCIÓN: GRUPO 7 - PAREDES EN "L" (Obras 34 al 48)        -->
+    <!-- ========================================================= -->
 
     <!-- OBRA 34 -->
     <a-entity id="grupo-7-obra-34"
@@ -1430,9 +1429,9 @@
     </a-entity>
 
 
-    <!-- ========================================================================= -->
-    <!-- SECCIÓN: GRUPO 8 - PARED PRINCIPAL DEL PASILLO (Obras 49 al 58)           -->
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
+    <!-- SECCIÓN: GRUPO 8 - PARED PRINCIPAL DEL PASILLO (Obras 49 al 58) -->
+    <!-- ========================================================= -->
 
     <!-- OBRA 49 -->
     <a-entity id="grupo-8-obra-49"
@@ -1535,9 +1534,9 @@
     </a-entity>
 
 
-    <!-- ========================================================================= -->
-    <!-- SECCIÓN: GRUPO 9 - PARED TESTERA DEL PASILLO (Obras 59 al 61)             -->
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
+    <!-- SECCIÓN: GRUPO 9 - PARED TESTERA DEL PASILLO (Obras 59 al 61) -->
+    <!-- ========================================================= -->
 
     <!-- OBRA 59 -->
     <a-entity id="grupo-9-obra-59"
@@ -1570,10 +1569,9 @@
     </a-entity>
 
 
-    <!-- ========================================================================= -->
-    <!-- SECCIÓN: PANTALLA DE VIDEO DE PRESENTACIÓN (YouTube)                      -->
-    <!-- • Para cambiar el video: sustituye el ID 'GZRF6dSq7tk' por el tuyo        -->
-    <!-- ========================================================================= -->
+    <!-- ========================================================= -->
+    <!-- SECCIÓN: PANTALLA DE VIDEO DE PRESENTACIÓN (YouTube)      -->
+    <!-- ========================================================= -->
     <a-entity id="pantalla-video-presentacion"
               position="-19.66 2.02 -10.20" rotation="0 90 0">
       <a-box width="3.90" height="2.30" depth="0.09" color="#0f0c18" material="roughness: 0.3; metalness: 0.6"></a-box>
@@ -1585,8 +1583,40 @@
 
 
     <!-- ========================================================================= -->
-    <!-- CÁMARA / PUNTO DE INICIO                                                  -->
+    <!-- TROFEOS DE LOS GANADORES EN PREVISUALIZACIÓN PÚBLICA (SIN EDITOR)         -->
     <!-- ========================================================================= -->
+
+    <!-- TROFEO 1.ER LUGAR (ORO) -->
+    <a-entity id="trofeo-primer-lugar"
+              gltf-model="#trofeo-oro"
+              position="-9.04 1.21 -14.96"
+              rotation="0 -90 0"
+              scale="0.65 0.65 0.65">
+      <a-entity light="type: point; color: #fff8e7; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.15 0.15"></a-entity>
+    </a-entity>
+
+    <!-- TROFEO 2.º LUGAR (PLATA) -->
+    <a-entity id="trofeo-segundo-lugar"
+              gltf-model="#trofeo-plata"
+              position="-0.75 1.14 -15.58"
+              rotation="0 90 0"
+              scale="0.60 0.60 0.60">
+      <a-entity light="type: point; color: #ffffff; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.15 0.15"></a-entity>
+    </a-entity>
+
+    <!-- TROFEO 3.ER LUGAR (BRONCE) -->
+    <a-entity id="trofeo-tercer-lugar"
+              gltf-model="#trofeo-bronce"
+              position="-8.66 1.13 -23.34"
+              rotation="0 -170 0"
+              scale="0.55 0.55 0.55">
+      <a-entity light="type: point; color: #ffe8cc; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.15 0.15"></a-entity>
+    </a-entity>
+
+
+    <!-- ========================================================= -->
+    <!-- CÁMARA / PUNTO DE INICIO                                  -->
+    <!-- ========================================================= -->
     <a-entity id="rig" movement-controls="controls: keyboard; speed: 0.35; constrainToNavMesh: false;" position="-12.5 2.05 -10.0" rotation="0 90 0">
       <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false; touchEnabled: true;"></a-camera>
     </a-entity>
