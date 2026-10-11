@@ -1148,9 +1148,9 @@
     <div id="trofeo-viewer-container">
       <button id="trofeo-viewer-close" onclick="cerrarModalTrofeo()" title="Cerrar">✕</button>
       
-      <!-- Lado izquierdo: Video de nebulosa como fondo exclusivo + Canvas 3D del trofeo -->
+      <!-- Lado izquierdo: Video de nebulosa como fondo exclusivo (carga diferida sin consumo previo) -->
       <div id="trofeo-viewer-canvas-wrap">
-        <video id="trofeo-bg-video" src="nebulosa.mp4" autoplay loop muted playsinline></video>
+        <video id="trofeo-bg-video" src="nebulosa.mp4" preload="none" loop muted playsinline></video>
       </div>
 
       <!-- Lado derecho: Tarjeta de Honor legible con fondo oscuro y Poppins -->
@@ -1199,7 +1199,7 @@
     <button id="btn-toggle-nebulosa" onclick="alternarNebulosa()">🌌 Salir a la Nebulosa</button>
   </div>
 
-  <!-- ESCENA PÚBLICA -->
+  <!-- ESCENA PÚBLICA (CARGA INMEDIATA SIN BLOQUEO) -->
   <a-scene 
     video-handler
     loading-screen="enabled: false;"
@@ -1207,7 +1207,8 @@
     raycaster="objects: .clickable;"
     renderer="logarithmicDepthBuffer: true; colorManagement: true; physicallyCorrectLights: true; exposure: 1.0; toneMapping: ACESFilmic;">
 
-    <a-assets>
+    <!-- timeout="100": No retiene la pantalla en negro si los videos tardan en responder -->
+    <a-assets timeout="100">
       <a-asset-item id="modelo-sala" src="galeria.glb"></a-asset-item>
       
       <!-- MODELOS 3D DE LOS TROFEOS -->
