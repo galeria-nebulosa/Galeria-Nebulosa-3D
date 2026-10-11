@@ -217,7 +217,6 @@
   </style>
 
   <script>
-    // Datos de los Ganadores
     const GANADORES = {
       gold: {
         badge: "★ PRIMER LUGAR (ORO)",
@@ -225,8 +224,7 @@
         artista: "Artista Galardonado 1.º Lugar",
         obra: "«Título de la Obra Ganadora»",
         desc: "Máximo galardón de la muestra anual Constelación de Creadores. Reconocimiento a la maestría técnica, impacto visual y concepto plástico.",
-        camPos: "0 1.8 3.6",
-        lookAt: "0 1.6 0"
+        camPos: "0 1.9 3.5"
       },
       silver: {
         badge: "★ SEGUNDO LUGAR (PLATA)",
@@ -234,8 +232,7 @@
         artista: "Artista Galardonado 2.º Lugar",
         obra: "«Título de la Obra de Plata»",
         desc: "Distinción de honor por su destacada propuesta artística, sensibilidad cromática y ejecución técnica.",
-        camPos: "-3.2 1.6 3.4",
-        lookAt: "-3.0 1.4 0"
+        camPos: "-3.0 1.7 3.3"
       },
       bronze: {
         badge: "★ TERCER LUGAR (BRONCE)",
@@ -243,8 +240,7 @@
         artista: "Artista Galardonado 3.ᵉʳ Lugar",
         obra: "«Título de la Obra de Bronce»",
         desc: "Galardón de bronce en reconocimiento a la originalidad creativa, destreza y valiosa participación en la galería.",
-        camPos: "3.2 1.6 3.4",
-        lookAt: "3.0 1.4 0"
+        camPos: "3.0 1.7 3.3"
       }
     };
 
@@ -252,7 +248,6 @@
       const data = GANADORES[lugar];
       if (!data) return;
 
-      // Actualizar tarjeta del ganador
       const badge = document.getElementById('card-badge');
       badge.textContent = data.badge;
       badge.className = 'badge-tier ' + data.badgeClass;
@@ -261,12 +256,10 @@
       document.getElementById('card-artwork').textContent = data.obra;
       document.getElementById('card-desc').textContent = data.desc;
 
-      // Actualizar estilo de los botones
       document.getElementById('btn-gold').className = 'btn-tier ' + (lugar === 'gold' ? 'active-gold' : '');
       document.getElementById('btn-silver').className = 'btn-tier ' + (lugar === 'silver' ? 'active-silver' : '');
       document.getElementById('btn-bronze').className = 'btn-tier ' + (lugar === 'bronze' ? 'active-bronze' : '');
 
-      // Mover suavemente la cámara al trofeo
       const rig = document.querySelector('#camera-rig');
       if (rig) {
         rig.setAttribute('animation', {
@@ -278,7 +271,6 @@
       }
     }
 
-    // Componente para rotación lenta 360°
     AFRAME.registerComponent('giro-cosmico', {
       schema: { velocidad: { type: 'number', default: 0.25 } },
       tick: function (time, delta) {
@@ -286,14 +278,48 @@
       }
     });
 
-    // Componente para clic sobre el trofeo
     AFRAME.registerComponent('trofeo-click', {
       schema: { lugar: { type: 'string', default: 'gold' } },
       init: function () {
-        this.el.addEventListener('click', (e) => {
-          e.stopPropagation();
-          seleccionarTrofeo(this.data.lugar);
+        const el = this.el;
+        const lugar = this.data.lugar;
+        const ejecutar = (e) => {
+          if (e) e.stopPropagation();
+          seleccionarTrofeo(lugar);
+        };
+        el.classList.add('clickable');
+        el.addEventListener('click', ejecutar);
+        el.addEventListener('model-loaded', () => {
+          el.querySelectorAll('*').forEach(child => {
+            child.classList.add('clickable');
+            child.addEventListener('click', ejecutar);
+          });
         });
+      }
+    });
+
+    AFRAME.registerComponent('video-handler', {
+      init: function () {
+        const video = document.querySelector('#video-nebulosa');
+        if (!video) return;
+        video.playbackRate = 1.0;
+        const start = () => {
+          if (video.paused) {
+            video.play().catch(() => {});
+          }
+          window.removeEventListener('click', start);
+          window.removeEventListener('keydown', start);
+        };
+        window.addEventListener('click', start);
+        window.addEventListener('keydown', start);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const lugarParam = urlParams.get('lugar');
+      if (lugarParam && GANADORES[lugarParam]) {
+        setTimeout(() => seleccionarTrofeo(lugarParam), 300);
       }
     });
   </script>
@@ -334,12 +360,11 @@
 
   <!-- Escena 3D A-Frame -->
   <a-scene
-    cursor="rayOrigin: mouse;"
-    raycaster="objects: .clickable;"
+    video-handler
     renderer="colorManagement: true; physicallyCorrectLights: true; exposure: 1.0; toneMapping: ACESFilmic;">
 
     <a-assets timeout="12000">
-      <!-- Los 3 archivos reales de Blender -->
+      <!-- Los 3 modelos oficiales de Blender -->
       <a-asset-item id="trofeo-oro" src="Trofeo del primer lugar.glb"></a-asset-item>
       <a-asset-item id="trofeo-plata" src="Trofeo de estrella del segundo lugar.glb"></a-asset-item>
       <a-asset-item id="trofeo-bronce" src="Trofeo de estrella del tercer lugar.glb"></a-asset-item>
@@ -359,57 +384,72 @@
     <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="3.5" radius-outer="5.0" color="#a855f7" material="opacity: 0.3; transparent: true;"></a-ring>
 
     <!-- ========================================================= -->
-    <!-- PODIO DE LOS TRES TROFEOS CON GIRO SUAVE                   -->
+    <!-- PODIO DE LOS TRES TROFEOS CON DETECCIÓN PRECISA DE CLIC   -->
     <!-- ========================================================= -->
 
     <!-- 1.ER LUGAR (CENTRO - MÁS ALTO) -->
     <a-entity position="0 0 0">
-      <!-- Pedestal individual -->
       <a-cylinder position="0 0.3 0" radius="1.1" height="0.6" color="#170c2a" material="roughness: 0.3; metalness: 0.6;"></a-cylinder>
-      <!-- Trofeo con giro continuo y clic -->
-      <a-entity id="entidad-trofeo-oro"
-                class="clickable"
-                gltf-model="#trofeo-oro"
-                position="0 0.6 0"
-                scale="0.85 0.85 0.85"
-                giro-cosmico="velocidad: 0.3"
-                trofeo-click="lugar: gold">
-        <!-- Luz dedicada solo a su estrella -->
-        <a-entity light="type: point; color: #fff8e7; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.2 0.2"></a-entity>
+      
+      <!-- Contenedor giratorio -->
+      <a-entity id="rotador-oro" giro-cosmico="velocidad: 0.3">
+        <a-entity id="entidad-trofeo-oro"
+                  class="clickable"
+                  gltf-model="#trofeo-oro"
+                  position="0 0.6 0"
+                  scale="0.85 0.85 0.85"
+                  trofeo-click="lugar: gold">
+          <a-entity light="type: point; color: #fff8e7; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.2 0.2"></a-entity>
+        </a-entity>
+        <!-- Caja invisible para garantizar clic con el ratón -->
+        <a-box class="clickable" trofeo-click="lugar: gold" position="0 1.5 0" width="1.8" height="2.2" depth="1.8" material="opacity: 0; transparent: true;"></a-box>
       </a-entity>
     </a-entity>
 
     <!-- 2.º LUGAR (IZQUIERDA) -->
     <a-entity position="-3.0 0 0">
       <a-cylinder position="0 0.2 0" radius="0.95" height="0.4" color="#170c2a" material="roughness: 0.3; metalness: 0.6;"></a-cylinder>
-      <a-entity id="entidad-trofeo-plata"
-                class="clickable"
-                gltf-model="#trofeo-plata"
-                position="0 0.4 0"
-                scale="0.75 0.75 0.75"
-                giro-cosmico="velocidad: 0.3"
-                trofeo-click="lugar: silver">
-        <a-entity light="type: point; color: #ffffff; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.2 0.2"></a-entity>
+      
+      <!-- Contenedor giratorio -->
+      <a-entity id="rotador-plata" giro-cosmico="velocidad: 0.3">
+        <a-entity id="entidad-trofeo-plata"
+                  class="clickable"
+                  gltf-model="#trofeo-plata"
+                  position="0 0.4 0"
+                  scale="0.75 0.75 0.75"
+                  trofeo-click="lugar: silver">
+          <a-entity light="type: point; color: #ffffff; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.2 0.2"></a-entity>
+        </a-entity>
+        <!-- Caja invisible para garantizar clic con el ratón -->
+        <a-box class="clickable" trofeo-click="lugar: silver" position="0 1.3 0" width="1.6" height="2.0" depth="1.6" material="opacity: 0; transparent: true;"></a-box>
       </a-entity>
     </a-entity>
 
     <!-- 3.ER LUGAR (DERECHA) -->
     <a-entity position="3.0 0 0">
       <a-cylinder position="0 0.15 0" radius="0.95" height="0.3" color="#170c2a" material="roughness: 0.3; metalness: 0.6;"></a-cylinder>
-      <a-entity id="entidad-trofeo-bronce"
-                class="clickable"
-                gltf-model="#trofeo-bronce"
-                position="0 0.3 0"
-                scale="0.70 0.70 0.70"
-                giro-cosmico="velocidad: 0.3"
-                trofeo-click="lugar: bronze">
-        <a-entity light="type: point; color: #ffe8cc; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.2 0.2"></a-entity>
+      
+      <!-- Contenedor giratorio -->
+      <a-entity id="rotador-bronce" giro-cosmico="velocidad: 0.3">
+        <a-entity id="entidad-trofeo-bronce"
+                  class="clickable"
+                  gltf-model="#trofeo-bronce"
+                  position="0 0.3 0"
+                  scale="0.70 0.70 0.70"
+                  trofeo-click="lugar: bronze">
+          <a-entity light="type: point; color: #ffe8cc; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.2 0.2"></a-entity>
+        </a-entity>
+        <!-- Caja invisible para garantizar clic con el ratón -->
+        <a-box class="clickable" trofeo-click="lugar: bronze" position="0 1.2 0" width="1.6" height="2.0" depth="1.6" material="opacity: 0; transparent: true;"></a-box>
       </a-entity>
     </a-entity>
 
-    <!-- CÁMARA CON ENFOQUE FLUIDO -->
-    <a-entity id="camera-rig" position="0 1.8 3.6">
-      <a-camera look-controls="pointerLockEnabled: false;"></a-camera>
+    <!-- CÁMARA CON CURSOR DE RATÓN DIRECTO -->
+    <a-entity id="camera-rig" position="0 1.9 3.5">
+      <a-camera look-controls="pointerLockEnabled: false;"
+                cursor="rayOrigin: mouse;"
+                raycaster="objects: .clickable;">
+      </a-camera>
     </a-entity>
 
   </a-scene>
