@@ -8,12 +8,17 @@
   <!-- Fuente oficial Poppins -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
 
   <style>
+    * {
+      font-family: 'Poppins', sans-serif !important;
+      box-sizing: border-box;
+    }
+
     /* CURSOR DE MANITA ABIERTA / CERRADA PARA ARRASTRE */
     html, body, canvas.a-canvas, a-scene {
       cursor: grab !important;
@@ -194,7 +199,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(6, 4, 12, 0.85);
+      background: rgba(5, 3, 10, 0.88);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       z-index: 10000002;
@@ -206,13 +211,13 @@
     #trofeo-viewer-container {
       position: relative;
       width: 100%;
-      max-width: 940px;
-      height: 80vh;
-      max-height: 600px;
-      background: linear-gradient(145deg, rgba(22, 14, 40, 0.96), rgba(12, 8, 22, 0.96));
-      border: 1.5px solid rgba(192, 132, 252, 0.4);
-      border-radius: 24px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.3);
+      max-width: 960px;
+      height: 82vh;
+      max-height: 620px;
+      background: linear-gradient(145deg, rgba(20, 12, 38, 0.98), rgba(10, 6, 20, 0.98));
+      border: 1.5px solid rgba(192, 132, 252, 0.45);
+      border-radius: 26px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 45px rgba(168, 85, 247, 0.35);
       overflow: hidden;
       display: flex;
       animation: modalFadeIn 0.25s ease-out;
@@ -222,16 +227,34 @@
       flex: 1;
       height: 100%;
       position: relative;
+      overflow: hidden;
       cursor: grab !important;
     }
     #trofeo-viewer-canvas-wrap:active {
       cursor: grabbing !important;
     }
+    #trofeo-bg-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.65;
+      pointer-events: none;
+      z-index: 1;
+    }
+    #trofeo-viewer-canvas-wrap canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
     #trofeo-viewer-card {
-      width: 330px;
-      background: rgba(18, 12, 34, 0.88);
-      border-left: 1px solid rgba(192, 132, 252, 0.25);
-      padding: 32px 26px;
+      width: 340px;
+      background: rgba(16, 10, 30, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-left: 1.5px solid rgba(192, 132, 252, 0.3);
+      padding: 34px 28px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -255,7 +278,7 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 20;
+      z-index: 30;
       transition: all 0.2s ease;
     }
     #trofeo-viewer-close:hover {
@@ -266,14 +289,14 @@
     @media (max-width: 768px) {
       #trofeo-viewer-container {
         flex-direction: column;
-        height: 86vh;
+        height: 88vh;
       }
       #trofeo-viewer-card {
         width: 100%;
         height: auto;
-        padding: 18px 20px;
+        padding: 20px 22px;
         border-left: none;
-        border-top: 1px solid rgba(192, 132, 252, 0.25);
+        border-top: 1.5px solid rgba(192, 132, 252, 0.3);
       }
     }
 
@@ -494,7 +517,7 @@
     // =========================================================================
     // VISOR 3D FLOTANTE DE PREMIACIÓN (CLONA DIRECTO EL MODELO DE LA SALA)
     // =========================================================================
-    let tScene, tCamera, tRenderer, tCurrentModel, tAnimId;
+    let tScene, tCamera, tRenderer, tCurrentModel, tAnimId, tStageGroup;
     let tIsDragging = false, tPrevX = 0;
 
     const DATOS_PREMIACION = {
@@ -533,13 +556,22 @@
       const overlay = document.getElementById('trofeo-viewer-overlay');
       overlay.style.display = 'flex';
 
+      // Reproducir video cósmico de fondo detrás del trofeo
+      const bgVideo = document.getElementById('trofeo-bg-video');
+      if (bgVideo) {
+        bgVideo.currentTime = 0;
+        bgVideo.play().catch(() => {});
+      }
+
       const wrap = document.getElementById('trofeo-viewer-canvas-wrap');
       if (!tRenderer) {
         initThreeTrofeo(wrap);
       } else {
-        tRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
-        tCamera.aspect = wrap.clientWidth / wrap.clientHeight;
-        tCamera.updateProjectionMatrix();
+        setTimeout(() => {
+          tRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+          tCamera.aspect = wrap.clientWidth / wrap.clientHeight;
+          tCamera.updateProjectionMatrix();
+        }, 50);
       }
 
       mostrarModeloEnVisor(data.entityId);
@@ -548,12 +580,17 @@
     function cerrarModalTrofeo() {
       document.getElementById('trofeo-viewer-overlay').style.display = 'none';
       if (tAnimId) cancelAnimationFrame(tAnimId);
+      const bgVideo = document.getElementById('trofeo-bg-video');
+      if (bgVideo) bgVideo.pause();
     }
 
     function initThreeTrofeo(wrap) {
       tScene = new THREE.Scene();
+      
+      // Cámara centrada y equilibrada
       tCamera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 50);
-      tCamera.position.set(0, 0, 4.2);
+      tCamera.position.set(0, 0.45, 3.8);
+      tCamera.lookAt(0, 0.25, 0);
 
       tRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
       tRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
@@ -562,15 +599,43 @@
       tRenderer.toneMappingExposure = 1.0;
       wrap.appendChild(tRenderer.domElement);
 
-      // Iluminación de estudio para el trofeo
-      const amb = new THREE.AmbientLight(0xffffff, 1.2);
+      // Iluminación suave de estudio
+      const amb = new THREE.AmbientLight(0xffffff, 1.25);
       tScene.add(amb);
       const dir1 = new THREE.DirectionalLight(0xffeedd, 2.2);
       dir1.position.set(3, 5, 4);
       tScene.add(dir1);
-      const rim = new THREE.DirectionalLight(0xa855f7, 2.4);
+      const rim = new THREE.DirectionalLight(0xa855f7, 2.5);
       rim.position.set(-4, 3, -3);
       tScene.add(rim);
+
+      // BASE / PEDESTAL CÓSMICO ESTÁTICO (NO GIRA)
+      tStageGroup = new THREE.Group();
+      
+      const stageGeo = new THREE.CylinderGeometry(1.5, 1.7, 0.22, 48);
+      const stageMat = new THREE.MeshStandardMaterial({
+        color: 0x1f1136,
+        roughness: 0.35,
+        metalness: 0.8
+      });
+      const stageMesh = new THREE.Mesh(stageGeo, stageMat);
+      stageMesh.position.y = -0.95;
+      tStageGroup.add(stageMesh);
+
+      // Anillo de energía iluminado sobre el pedestal
+      const ringGeo = new THREE.RingGeometry(1.05, 1.48, 48);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xc084fc,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.55
+      });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = -Math.PI / 2;
+      ringMesh.position.y = -0.835;
+      tStageGroup.add(ringMesh);
+
+      tScene.add(tStageGroup);
 
       // Rotación interactiva con el ratón o táctil
       wrap.addEventListener('mousedown', (e) => { tIsDragging = true; tPrevX = e.clientX; });
@@ -610,18 +675,23 @@
 
       const mesh = aframeEntity.getObject3D('mesh');
       if (mesh) {
-        // Clona el modelo ya descargado en la escena: carga en 0 segundos
+        // Clona el modelo ya descargado en la escena: carga inmediata
         tCurrentModel = mesh.clone(true);
 
         const box = new THREE.Box3().setFromObject(tCurrentModel);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
 
-        tCurrentModel.position.sub(center);
-
+        // Escala vertical equilibrada
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 2.4 / maxDim;
+        const scale = 2.15 / maxDim;
         tCurrentModel.scale.set(scale, scale, scale);
+
+        // Apoyar el trofeo directamente sobre el pedestal estático y centrado en X/Z
+        const newBox = new THREE.Box3().setFromObject(tCurrentModel);
+        tCurrentModel.position.x = -center.x * scale;
+        tCurrentModel.position.y = -0.835 - (newBox.min.y);
+        tCurrentModel.position.z = -center.z * scale;
 
         tScene.add(tCurrentModel);
         animarVisorTrofeo();
@@ -631,7 +701,7 @@
     function animarVisorTrofeo() {
       tAnimId = requestAnimationFrame(animarVisorTrofeo);
       if (tCurrentModel && !tIsDragging) {
-        tCurrentModel.rotation.y += 0.008; // Giro continuo en 360°
+        tCurrentModel.rotation.y += 0.008; // Únicamente el trofeo gira 360°
       }
       tRenderer.render(tScene, tCamera);
     }
@@ -1073,15 +1143,17 @@
     </div>
   </div>
 
-  <!-- VISOR 3D FLOTANTE DE PREMIACIÓN (SHOWCASE DEL TROFEO) -->
+  <!-- VISOR 3D FLOTANTE DE PREMIACIÓN (CON FONDO CÓSMICO Y PEDESTAL FIJO) -->
   <div id="trofeo-viewer-overlay" onclick="if(event.target === this) cerrarModalTrofeo()">
     <div id="trofeo-viewer-container">
       <button id="trofeo-viewer-close" onclick="cerrarModalTrofeo()" title="Cerrar">✕</button>
       
-      <!-- Canvas 3D donde gira el trofeo -->
-      <div id="trofeo-viewer-canvas-wrap"></div>
+      <!-- Lado izquierdo: Video de nebulosa como fondo exclusivo + Canvas 3D del trofeo -->
+      <div id="trofeo-viewer-canvas-wrap">
+        <video id="trofeo-bg-video" src="nebulosa.mp4" autoplay loop muted playsinline></video>
+      </div>
 
-      <!-- Tarjeta de Honor con Poppins -->
+      <!-- Lado derecho: Tarjeta de Honor legible con fondo oscuro y Poppins -->
       <div id="trofeo-viewer-card">
         <span id="trofeo-viewer-badge" style="display: inline-block; align-self: flex-start; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px;">
           ★ PRIMER LUGAR (ORO)
@@ -1868,7 +1940,6 @@
               rotation="0 -90 0"
               scale="0.65 0.65 0.65">
       <a-entity light="type: point; color: #fff8e7; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.15 0.15"></a-entity>
-      <!-- Caja de colisión invisible para garantizar detección del ratón/táctil -->
       <a-box class="clickable" trofeo-premiacion="lugar: gold" position="0 0.9 0" width="1.6" height="2.2" depth="1.6" material="opacity: 0; transparent: true"></a-box>
     </a-entity>
 
