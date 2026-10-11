@@ -1360,6 +1360,7 @@
     <a-entity id="grupo-5-obra-22"
               obra-interactiva="titulo: Título de Obra 22; desc: Descripción del cuadro 22; link: https://galerianebulosa.com/obras-destacadas/"
               position="20.00 2.05 0.54" rotation="0 -90 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; rotate="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.045" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 22; subtitulo: Grupo 5 - Lateral; src: ;">
@@ -1914,7 +1915,7 @@
 
 
     <!-- ========================================================================= -->
-    <!-- TROFEOS EDITABLES DE LOS GANADORES (CON CLASE INTERACTIVA PARA EL EDITOR) -->
+    <!-- TROFEOS EDITABLES DE LOS GANADORES (CON LUZ PUNTUAL EXCLUSIVA EN ESTRELLAS) -->
     <!-- ========================================================================= -->
 
     <!-- TROFEO 1.ER LUGAR (ORO) -->
@@ -1924,6 +1925,8 @@
               position="-9.04 1.21 -14.96"
               rotation="0 -90 0"
               scale="0.65 0.65 0.65">
+      <!-- Luz puntual enfocada exclusivamente en la estrella dorada -->
+      <a-entity light="type: point; color: #fff8e7; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.15 0.15"></a-entity>
     </a-entity>
 
     <!-- TROFEO 2.º LUGAR (PLATA) -->
@@ -1933,15 +1936,19 @@
               position="-0.75 1.14 -15.58"
               rotation="0 90 0"
               scale="0.60 0.60 0.60">
+      <!-- Luz puntual enfocada exclusivamente en la estrella plateada -->
+      <a-entity light="type: point; color: #ffffff; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.15 0.15"></a-entity>
     </a-entity>
 
-    <!-- TROFEO 3.ER LUGAR (BRONCE) -->
+    <!-- TROFEO 3.ER LUGAR (BRONCE - COORDENADAS ACTUALIZADAS) -->
     <a-entity id="trofeo-tercer-lugar"
               class="clickable"
               gltf-model="#trofeo-bronce"
-              position="-8.88 1.13 -23.22"
+              position="-8.66 1.13 -23.34"
               rotation="0 -170 0"
               scale="0.55 0.55 0.55">
+      <!-- Luz puntual enfocada exclusivamente en la estrella de bronce -->
+      <a-entity light="type: point; color: #ffe8cc; intensity: 1.6; distance: 2.2; decay: 1.5;" position="0 1.15 0.15"></a-entity>
     </a-entity>
 
 
