@@ -507,6 +507,7 @@
       const elementosAGuardar = [
         'rotulo-exterior',
         'grupo-1-cuadro-honor', 'grupo-1-obra-1', 'grupo-1-obra-2', 'grupo-1-obra-3',
+        'trofeo-primer-lugar', 'trofeo-segundo-lugar', 'trofeo-tercer-lugar',
         'obra-4', 'obra-5', 'obra-6',
         'grupo-3-obra-7', 'grupo-3-obra-8', 'grupo-3-obra-9',
         'grupo-4-obra-10', 'grupo-4-obra-11', 'grupo-4-obra-12', 'grupo-4-obra-13', 'grupo-4-obra-14', 'grupo-4-obra-15', 'grupo-4-obra-16',
@@ -531,6 +532,16 @@
             x = entidad.object3D.position.x;
             y = entidad.object3D.position.y;
             z = entidad.object3D.position.z;
+
+            const rx = THREE.MathUtils.radToDeg(entidad.object3D.rotation.x);
+            const ry = THREE.MathUtils.radToDeg(entidad.object3D.rotation.y);
+            const rz = THREE.MathUtils.radToDeg(entidad.object3D.rotation.z);
+            entidad.setAttribute('rotation', `${rx.toFixed(2)} ${ry.toFixed(2)} ${rz.toFixed(2)}`);
+
+            const sx = entidad.object3D.scale.x;
+            const sy = entidad.object3D.scale.y;
+            const sz = entidad.object3D.scale.z;
+            entidad.setAttribute('scale', `${sx.toFixed(2)} ${sy.toFixed(2)} ${sz.toFixed(2)}`);
           } else {
             const p = entidad.getAttribute('position');
             x = p.x; y = p.y; z = p.z;
@@ -616,11 +627,9 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
           }
 
-          // Overlay semitransparente cósmico
           ctx.fillStyle = 'rgba(15, 10, 30, 0.4)';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-          // Botón Play estilo Artsteps
           ctx.fillStyle = 'rgba(168, 85, 247, 0.88)';
           ctx.beginPath();
           ctx.arc(canvas.width / 2, canvas.height / 2, 75, 0, Math.PI * 2);
@@ -634,7 +643,6 @@
           ctx.closePath();
           ctx.fill();
 
-          // Barra inferior de título
           ctx.fillStyle = 'rgba(10, 8, 20, 0.75)';
           ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
 
@@ -995,6 +1003,11 @@
     <a-assets timeout="10000">
       <a-asset-item id="modelo-sala" src="galeria.glb"></a-asset-item>
       
+      <!-- MODELOS 3D DE LOS TROFEOS -->
+      <a-asset-item id="trofeo-oro" src="trofeo-1.glb"></a-asset-item>
+      <a-asset-item id="trofeo-plata" src="trofeo-2.glb"></a-asset-item>
+      <a-asset-item id="trofeo-bronce" src="trofeo-3.glb"></a-asset-item>
+      
       <video id="video-nebulosa" 
              src="nebulosa.mp4" 
              autoplay 
@@ -1029,7 +1042,7 @@
 
 
     <!-- ========================================================================= -->
-    <!-- ZONA CURATORIAL: OBRAS Y PANTALLAS EN 9 GRUPOS                            -->
+    <!-- ZONA CURATORIAL: OBRAS Y PANTALLAS EN 9 GRUPOS                             -->
     <!-- ========================================================================= -->
 
     <!-- ========================================================================= -->
@@ -1047,6 +1060,31 @@
       <a-plane position="0 0 -0.045" rotation="0 180 0" width="1.10" height="1.70"
                cuadro-ganador="titulo: GANADORES DE LOS PRIMEROS LUGARES; nombre: Artistas Galardonados;">
       </a-plane>
+    </a-entity>
+
+    <!-- TROFEOS EDITABLES DE LOS GANADORES -->
+    <!-- TROFEO 1.ER LUGAR (ORO) -->
+    <a-entity id="trofeo-primer-lugar"
+              gltf-model="#trofeo-oro"
+              position="-8.80 0.85 -16.08"
+              rotation="0 90 0"
+              scale="0.65 0.65 0.65">
+    </a-entity>
+
+    <!-- TROFEO 2.º LUGAR (PLATA) -->
+    <a-entity id="trofeo-segundo-lugar"
+              gltf-model="#trofeo-plata"
+              position="-8.80 0.75 -15.20"
+              rotation="0 90 0"
+              scale="0.60 0.60 0.60">
+    </a-entity>
+
+    <!-- TROFEO 3.ER LUGAR (BRONCE) -->
+    <a-entity id="trofeo-tercer-lugar"
+              gltf-model="#trofeo-bronce"
+              position="-8.80 0.65 -16.96"
+              rotation="0 90 0"
+              scale="0.55 0.55 0.55">
     </a-entity>
 
     <!-- OBRA 1 (Izquierda) -->
@@ -1090,7 +1128,7 @@
 
 
     <!-- ========================================================= -->
-    <!-- GRUPO 2: PARED DERECHA (Tabique divisorio)               -->
+    <!-- GRUPO 2: PARED DERECHA (Tabique divisorio)                -->
     <!-- ========================================================= -->
 
     <!-- OBRA 4 (Derecha - Frente) -->
@@ -1506,7 +1544,7 @@
 
 
     <!-- ========================================================================= -->
-    <!-- GRUPO 7: PAREDES EN "L" (15 Obras: 34 al 48)                              -->
+    <!-- GRUPO 7: PAREDES EN "L" (15 Obras: 34 al 48)                             -->
     <!-- ========================================================================= -->
 
     <!-- OBRA 34 (Pared Frontal - Sector 1) -->
