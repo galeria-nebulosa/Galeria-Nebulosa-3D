@@ -510,139 +510,390 @@
     }
 
     // =========================================================================
-    // COLISIÓN DIRECTA CON LAS MALLAS DE BLENDER (wall_1, wall_2, windows, border)
-    // + ANULACIÓN TOTAL DE INERCIA EN TOCK (IMPOSIBLE DE ATRAVESAR)
+    // COLISIÓN CON LAS PAREDES (el jugador no puede salir de la galería)
     // =========================================================================
-    AFRAME.registerComponent('colision-paredes', {
-      init: function () {
-        this.prevPos = new THREE.Vector3();
-        this.raycaster = new THREE.Raycaster();
-        this.mallasMuros = [];
-        this.construido = false;
-        this.playerRadius = 0.65; // Distancia segura de parada
-        this.alturas = [1.0, 1.8]; // Rayos a nivel de torso y cabeza
-        this.prevPos.copy(this.el.object3D.position);
-      },
+    // ==CORE-START==
+    // -----------------------------------------------------------------------
+    // MAPA DE COLISIÓN (no depende de nombres de objetos ni de raycasting)
+    //  - Lee TODOS los triángulos del modelo de la sala en coordenadas del mundo.
+    //  - PISO: detecta el nivel del suelo y marca por dónde se puede caminar.
+    //  - MUROS: corta la geometría a varias alturas del cuerpo y marca todo lo sólido.
+    //  - Solo se puede estar donde hay piso, no hay nada sólido y se conecta con el
+    //    punto de inicio. Así es imposible "salirse" aunque cambie el modelo.
+    // -----------------------------------------------------------------------
+    function crearMapaColision(tris, opt) {
+      opt = opt || {};
+      var ojoY = opt.ojoY != null ? opt.ojoY : 2.05;
+      var ini = opt.inicio || { x: 0, z: 0 };
+      var n = Math.floor(tris.length / 9);
+      var info = { triangulos: n };
+      if (n === 0) return { activo: false, motivo: 'el modelo no tiene geometría', info: info };
 
-      // Extrae directamente las mallas de Blender identificadas
-      construirColisionadores: function () {
-        const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
-        if (!roomEl) return false;
-        const mesh = roomEl.getObject3D('mesh');
-        if (!mesh) return false;
+      var i, j, o;
 
-        mesh.updateMatrixWorld(true);
-        const lista = [];
-
-        mesh.traverse((node) => {
-          if (node.isMesh && node.geometry) {
-            const nombre = (node.name || "").toLowerCase();
-            const matNombre = (node.material && node.material.name ? node.material.name : "").toLowerCase();
-            const idObj = nombre + " " + matNombre;
-
-            // Detección exacta de las paredes de Blender (wall_1, wall_2, windows, border)
-            if (idObj.includes('wall') || idObj.includes('window') || idObj.includes('border') || idObj.includes('vidrio') || idObj.includes('panel')) {
-              // Creamos un proxy de doble cara para detectar choques de frente y de espaldas
-              const matDoble = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
-              const proxy = new THREE.Mesh(node.geometry, matDoble);
-              proxy.matrixAutoUpdate = false;
-              proxy.matrixWorld.copy(node.matrixWorld);
-              lista.push(proxy);
+      // ---- 1) Nivel del piso: la superficie horizontal que hay justo bajo el punto de inicio
+      var hist = {};
+      var yTope = ojoY - 0.6;
+      var bajoPies = -Infinity;
+      var ax, ay, az, bx, by, bz, cx, cy, cz, ux, uy, uz, vx, vy, vz, nx, ny, nz, len, cosY;
+      for (i = 0; i < n; i++) {
+        o = i * 9;
+        ax = tris[o]; ay = tris[o + 1]; az = tris[o + 2];
+        bx = tris[o + 3]; by = tris[o + 4]; bz = tris[o + 5];
+        cx = tris[o + 6]; cy = tris[o + 7]; cz = tris[o + 8];
+        ux = bx - ax; uy = by - ay; uz = bz - az;
+        vx = cx - ax; vy = cy - ay; vz = cz - az;
+        nx = uy * vz - uz * vy; ny = uz * vx - ux * vz; nz = ux * vy - uy * vx;
+        len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (len < 1e-9) continue;
+        if (Math.abs(ny) / len > 0.95) {
+          var yy = (ay + by + cy) / 3;
+          if (yy < yTope) {
+            var kb = Math.round(yy / 0.05);
+            hist[kb] = (hist[kb] || 0) + len / 2;
+            if (yy > bajoPies) {
+              var dd = (bz - cz) * (ax - cx) + (cx - bx) * (az - cz);
+              if (Math.abs(dd) > 1e-12) {
+                var q1 = ((bz - cz) * (ini.x - cx) + (cx - bx) * (ini.z - cz)) / dd;
+                var q2 = ((cz - az) * (ini.x - cx) + (ax - cx) * (ini.z - cz)) / dd;
+                if (q1 >= -1e-9 && q2 >= -1e-9 && 1 - q1 - q2 >= -1e-9) bajoPies = yy;
+              }
             }
           }
-        });
+        }
+      }
+      var pisoY = ojoY - 1.7, pisoDetectado = false;
+      if (bajoPies > -Infinity) {
+        pisoY = bajoPies;
+        pisoDetectado = true;
+      } else {
+        var mejor = 0, claves = Object.keys(hist), puntajes = {}, kk;
+        for (i = 0; i < claves.length; i++) {
+          kk = parseInt(claves[i], 10);
+          puntajes[kk] = (hist[kk - 1] || 0) + (hist[kk] || 0) + (hist[kk + 1] || 0);
+          if (puntajes[kk] > mejor) mejor = puntajes[kk];
+        }
+        if (mejor > 0) {
+          var yElegida = -Infinity;
+          for (i = 0; i < claves.length; i++) {
+            kk = parseInt(claves[i], 10);
+            if (puntajes[kk] >= mejor * 0.85 && kk * 0.05 > yElegida) yElegida = kk * 0.05;
+          }
+          pisoY = yElegida;
+          pisoDetectado = true;
+        }
+      }
+      info.pisoY = Math.round(pisoY * 100) / 100;
 
-        this.mallasMuros = lista;
-        return lista.length > 0;
-      },
+      // ---- Rejilla 2D: solo con la geometría que está a la altura del cuerpo
+      var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+      var yBajo = pisoY - 0.2, yAlto = pisoY + 2.2;
+      for (i = 0; i < n; i++) {
+        o = i * 9;
+        ay = tris[o + 1]; by = tris[o + 4]; cy = tris[o + 7];
+        if (Math.max(ay, by, cy) < yBajo || Math.min(ay, by, cy) > yAlto) continue;
+        for (j = 0; j < 9; j += 3) {
+          var px = tris[o + j], pz = tris[o + j + 2];
+          if (px < minX) minX = px;
+          if (px > maxX) maxX = px;
+          if (pz < minZ) minZ = pz;
+          if (pz > maxZ) maxZ = pz;
+        }
+      }
+      if (!(maxX > minX) || !(maxZ > minZ)) return { activo: false, motivo: 'no hay geometría a la altura del cuerpo', info: info };
+      minX -= 1; minZ -= 1; maxX += 1; maxZ += 1;
+      var CELDA = 0.1;
+      while (Math.ceil((maxX - minX) / CELDA) * Math.ceil((maxZ - minZ) / CELDA) > 4e6) CELDA *= 1.5;
+      var PASO = CELDA / 2;
+      var W = Math.ceil((maxX - minX) / CELDA) + 1;
+      var H = Math.ceil((maxZ - minZ) / CELDA) + 1;
+      var piso = new Uint8Array(W * H);
+      var muro = new Uint8Array(W * H);
+      info.celdaM = Math.round(CELDA * 100) / 100;
 
-      hayMuro: function (ox, oz, dirx, dirz, distancia) {
-        const origen = new THREE.Vector3();
-        const dir = new THREE.Vector3(dirx, 0, dirz).normalize();
-        const normalMundo = new THREE.Vector3();
+      // ---- 2) Muros: cortes horizontales a varias alturas del cuerpo
+      var alturas = [0.35, 0.8, 1.25, 1.7];
+      var s, hh, pts, t, ix, iz, steps, sx, sz, L;
+      var marcarSegmento = function (x1, z1, x2, z2) {
+        L = Math.sqrt((x2 - x1) * (x2 - x1) + (z2 - z1) * (z2 - z1));
+        steps = Math.max(1, Math.ceil(L / PASO));
+        for (j = 0; j <= steps; j++) {
+          sx = x1 + (x2 - x1) * (j / steps);
+          sz = z1 + (z2 - z1) * (j / steps);
+          ix = Math.floor((sx - minX) / CELDA);
+          iz = Math.floor((sz - minZ) / CELDA);
+          if (ix >= 0 && iz >= 0 && ix < W && iz < H) muro[iz * W + ix] = 1;
+        }
+      };
+      var nMuros = 0, nPiso = 0;
+      for (i = 0; i < n; i++) {
+        o = i * 9;
+        ax = tris[o]; ay = tris[o + 1]; az = tris[o + 2];
+        bx = tris[o + 3]; by = tris[o + 4]; bz = tris[o + 5];
+        cx = tris[o + 6]; cy = tris[o + 7]; cz = tris[o + 8];
+        ux = bx - ax; uy = by - ay; uz = bz - az;
+        vx = cx - ax; vy = cy - ay; vz = cz - az;
+        nx = uy * vz - uz * vy; ny = uz * vx - ux * vz; nz = ux * vy - uy * vx;
+        len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (len < 1e-9) continue;
+        cosY = Math.abs(ny) / len;
 
-        for (let i = 0; i < this.alturas.length; i++) {
-          origen.set(ox, this.alturas[i], oz);
-          this.raycaster.set(origen, dir);
-          this.raycaster.near = 0;
-          this.raycaster.far = distancia;
-          const hits = this.raycaster.intersectObjects(this.mallasMuros, false);
-          for (let j = 0; j < hits.length; j++) {
-            const h = hits[j];
-            if (!h.face) continue;
-            normalMundo.copy(h.face.normal).transformDirection(h.object.matrixWorld);
-            // Si es un muro vertical, confirma el bloqueo
-            if (Math.abs(normalMundo.y) < 0.70) return true;
+        if (cosY < 0.9) {
+          var yMin = Math.min(ay, by, cy), yMax = Math.max(ay, by, cy);
+          var contado = false;
+          for (s = 0; s < alturas.length; s++) {
+            hh = pisoY + alturas[s];
+            if (hh < yMin || hh > yMax) continue;
+            pts = [];
+            if ((ay > hh) !== (by > hh)) { t = (hh - ay) / (by - ay); pts.push(ax + t * (bx - ax), az + t * (bz - az)); }
+            if ((by > hh) !== (cy > hh)) { t = (hh - by) / (cy - by); pts.push(bx + t * (cx - bx), bz + t * (cz - bz)); }
+            if ((cy > hh) !== (ay > hh)) { t = (hh - cy) / (ay - cy); pts.push(cx + t * (ax - cx), cz + t * (az - cz)); }
+            if (pts.length >= 4) { marcarSegmento(pts[0], pts[1], pts[2], pts[3]); contado = true; }
+          }
+          if (contado) nMuros++;
+        } else if (cosY > 0.95) {
+          // ---- 3) Piso: triángulos horizontales a la altura del suelo
+          var ym = (ay + by + cy) / 3;
+          if (Math.abs(ym - pisoY) < 0.12) {
+            var x0 = Math.min(ax, bx, cx), x1 = Math.max(ax, bx, cx);
+            var z0 = Math.min(az, bz, cz), z1 = Math.max(az, bz, cz);
+            var i0 = Math.max(0, Math.floor((x0 - minX) / CELDA)), i1 = Math.min(W - 1, Math.floor((x1 - minX) / CELDA));
+            var k0 = Math.max(0, Math.floor((z0 - minZ) / CELDA)), k1 = Math.min(H - 1, Math.floor((z1 - minZ) / CELDA));
+            var det = (bz - cz) * (ax - cx) + (cx - bx) * (az - cz);
+            var marcado = false;
+            if (Math.abs(det) > 1e-12) {
+              for (var kz = k0; kz <= k1; kz++) {
+                var pz2 = minZ + (kz + 0.5) * CELDA;
+                for (var kx = i0; kx <= i1; kx++) {
+                  var px2 = minX + (kx + 0.5) * CELDA;
+                  var l1 = ((bz - cz) * (px2 - cx) + (cx - bx) * (pz2 - cz)) / det;
+                  var l2 = ((cz - az) * (px2 - cx) + (ax - cx) * (pz2 - cz)) / det;
+                  var l3 = 1 - l1 - l2;
+                  if (l1 >= -1e-9 && l2 >= -1e-9 && l3 >= -1e-9) { piso[kz * W + kx] = 1; marcado = true; }
+                }
+              }
+            }
+            if (!marcado) {
+              ix = Math.floor(((ax + bx + cx) / 3 - minX) / CELDA);
+              iz = Math.floor(((az + bz + cz) / 3 - minZ) / CELDA);
+              if (ix >= 0 && iz >= 0 && ix < W && iz < H) piso[iz * W + ix] = 1;
+            }
+            nPiso++;
           }
         }
-        return false;
+      }
+      var celdasPiso = 0, celdasMuro = 0;
+      for (i = 0; i < piso.length; i++) { celdasPiso += piso[i]; celdasMuro += muro[i]; }
+      info.celdasPiso = celdasPiso;
+      info.celdasMuro = celdasMuro;
+      info.trianguloMuros = nMuros;
+      info.trianguloPiso = nPiso;
+      info.pisoDetectado = pisoDetectado && celdasPiso >= 400;
+
+      // ---- 4) Elegir la configuración más estricta que deje caminar desde el inicio
+      var offsCache = {};
+      var offsets = function (r) {
+        var key = r.toFixed(3);
+        if (offsCache[key]) return offsCache[key];
+        var R = Math.ceil(r / CELDA), lista = [], a, b;
+        for (b = -R; b <= R; b++) for (a = -R; a <= R; a++) {
+          if ((a * CELDA) * (a * CELDA) + (b * CELDA) * (b * CELDA) <= r * r) lista.push(a, b);
+        }
+        offsCache[key] = lista;
+        return lista;
+      };
+      var cfg = { piso: true, muro: true, offs: offsets(0.45), alc: null };
+      var libreCelda = function (ix2, iz2) {
+        if (ix2 < 0 || iz2 < 0 || ix2 >= W || iz2 >= H) return false;
+        var k = iz2 * W + ix2;
+        if (cfg.muro && muro[k]) return false;
+        if (cfg.piso && !piso[k]) return false;
+        return true;
+      };
+      var cuerpoLibre = function (ix2, iz2) {
+        var of = cfg.offs;
+        for (var q = 0; q < of.length; q += 2) if (!libreCelda(ix2 + of[q], iz2 + of[q + 1])) return false;
+        return true;
+      };
+      var sx0 = Math.floor((ini.x - minX) / CELDA), sz0 = Math.floor((ini.z - minZ) / CELDA);
+      var cola = new Int32Array(W * H);
+      var inundar = function () {
+        var vis = new Uint8Array(W * H), cabeza = 0, cola2 = 0, cuenta = 0, toca = false;
+        if (!cuerpoLibre(sx0, sz0)) return { vis: vis, cuenta: 0, toca: false };
+        vis[sz0 * W + sx0] = 1; cola[cola2++] = sz0 * W + sx0;
+        while (cabeza < cola2) {
+          var c = cola[cabeza++], cxi = c % W, czi = (c - cxi) / W;
+          cuenta++;
+          if (cxi <= 1 || czi <= 1 || cxi >= W - 2 || czi >= H - 2) toca = true;
+          var vec = [cxi + 1, czi, cxi - 1, czi, cxi, czi + 1, cxi, czi - 1];
+          for (var d = 0; d < 8; d += 2) {
+            var nxi = vec[d], nzi = vec[d + 1];
+            if (nxi < 0 || nzi < 0 || nxi >= W || nzi >= H) continue;
+            var kn = nzi * W + nxi;
+            if (vis[kn]) continue;
+            if (!cuerpoLibre(nxi, nzi)) continue;
+            vis[kn] = 1; cola[cola2++] = kn;
+          }
+        }
+        return { vis: vis, cuenta: cuenta, toca: toca };
+      };
+
+      var combos = [];
+      if (info.pisoDetectado) combos.push({ piso: true, muro: true });
+      if (info.pisoDetectado) combos.push({ piso: true, muro: false });
+      combos.push({ piso: false, muro: true });
+      var radios = [0.45, 0.35, 0.25, 0.15];
+      var elegido = null;
+      for (var ci = 0; ci < combos.length && !elegido; ci++) {
+        for (var ri = 0; ri < radios.length && !elegido; ri++) {
+          cfg.piso = combos[ci].piso; cfg.muro = combos[ci].muro; cfg.offs = offsets(radios[ri]);
+          var res = inundar();
+          if (res.cuenta * CELDA * CELDA >= 15) {
+            elegido = { piso: cfg.piso, muro: cfg.muro, radio: radios[ri], res: res };
+          }
+        }
+      }
+      if (!elegido) {
+        return { activo: false, motivo: 'no se pudo ubicar una zona caminable desde el punto de inicio', info: info };
+      }
+      cfg.piso = elegido.piso; cfg.muro = elegido.muro; cfg.offs = offsets(elegido.radio);
+      cfg.alc = elegido.res.vis;
+      info.usaPiso = elegido.piso;
+      info.usaMuros = elegido.muro;
+      info.radio = elegido.radio;
+      info.areaCaminable = Math.round(elegido.res.cuenta * CELDA * CELDA);
+      info.zonaAbierta = elegido.res.toca;
+
+      var permitido = function (x, z) {
+        var ix2 = Math.floor((x - minX) / CELDA), iz2 = Math.floor((z - minZ) / CELDA);
+        if (ix2 < 0 || iz2 < 0 || ix2 >= W || iz2 >= H) return false;
+        return cfg.alc[iz2 * W + ix2] === 1;
+      };
+
+      // Mueve de (x0,z0) a (x1,z1) en pasitos; si choca, se desliza por la pared
+      var mover = function (x0, z0, x1, z1) {
+        var dx = x1 - x0, dz = z1 - z0;
+        var dist = Math.sqrt(dx * dx + dz * dz);
+        var pasos = Math.max(1, Math.ceil(dist / (CELDA * 0.8)));
+        var sdx = dx / pasos, sdz = dz / pasos;
+        var x = x0, z = z0, choco = false;
+        for (var p = 0; p < pasos; p++) {
+          if (permitido(x + sdx, z + sdz)) { x += sdx; z += sdz; }
+          else if (sdx !== 0 && permitido(x + sdx, z)) { x += sdx; choco = true; }
+          else if (sdz !== 0 && permitido(x, z + sdz)) { z += sdz; choco = true; }
+          else { choco = true; }
+        }
+        return { x: x, z: z, choco: choco };
+      };
+
+      return { activo: true, permitido: permitido, mover: mover, info: info };
+    }
+    // ==CORE-END==
+
+    AFRAME.registerComponent('colision-paredes', {
+      init: function () {
+        const p = this.el.object3D.position;
+        this.mapa = null;
+        this.listo = false;
+        this.inicio = { x: p.x, z: p.z };
+        this.prev = new THREE.Vector3().copy(p);
+        this.bueno = new THREE.Vector3().copy(p);
+        window.colisionEstado = 'esperando el modelo de la sala';
       },
 
-      // Tock se ejecuta DESPUÉS de que el teclado mueve al jugador
-      tock: function () {
+      // Lee todos los triángulos del modelo de la sala (en coordenadas del mundo)
+      construir: function () {
+        const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
+        if (!roomEl) return false;
+        const raiz = roomEl.getObject3D('mesh');
+        if (!raiz) return false;
+
+        try {
+          raiz.updateMatrixWorld(true);
+          let total = 0;
+          const mallas = [];
+          raiz.traverse((nodo) => {
+            if (nodo.isMesh && nodo.visible !== false && nodo.geometry && nodo.geometry.attributes && nodo.geometry.attributes.position) {
+              mallas.push(nodo);
+              const g = nodo.geometry;
+              total += Math.floor((g.index ? g.index.count : g.attributes.position.count) / 3);
+            }
+          });
+
+          const tris = new Float32Array(total * 9);
+          const v = new THREE.Vector3();
+          let o = 0;
+          mallas.forEach((nodo) => {
+            const g = nodo.geometry, pos = g.attributes.position, idx = g.index, m = nodo.matrixWorld;
+            const cuenta = Math.floor((idx ? idx.count : pos.count) / 3) * 3;
+            for (let t = 0; t < cuenta; t++) {
+              const vi = idx ? idx.getX(t) : t;
+              v.fromBufferAttribute(pos, vi).applyMatrix4(m);
+              tris[o++] = v.x; tris[o++] = v.y; tris[o++] = v.z;
+            }
+          });
+
+          const ojoY = this.el.object3D.position.y;
+          this.mapa = crearMapaColision(tris, { ojoY: ojoY, inicio: this.inicio });
+        } catch (err) {
+          console.warn('[Colisión] error al preparar las paredes:', err);
+          this.mapa = { activo: false, motivo: String(err) };
+        }
+
+        this.listo = true;
+        if (this.mapa.activo) {
+          window.colisionEstado = 'activa';
+          window.colisionInfo = this.mapa.info;
+          console.info('[Colisión] activa', this.mapa.info);
+        } else {
+          window.colisionEstado = 'desactivada: ' + this.mapa.motivo;
+          console.warn('[Colisión] desactivada:', this.mapa.motivo, this.mapa.info || '');
+        }
+        return true;
+      },
+
+      tick: function () {
+        const p = this.el.object3D.position;
+
+        // En el mirador exterior de la nebulosa no hay muros que restrinjan
         if (enLaNebulosa) {
-          this.prevPos.copy(this.el.object3D.position);
+          this.prev.copy(p);
           return;
         }
 
-        if (!this.construido) {
-          this.construido = this.construirColisionadores();
-          if (!this.construido) {
-            this.prevPos.copy(this.el.object3D.position);
-            return;
-          }
+        if (!this.listo && !this.construir()) {
+          this.prev.copy(p);
+          return;
         }
-
-        const curr = this.el.object3D.position;
-        const dx = curr.x - this.prevPos.x;
-        const dz = curr.z - this.prevPos.z;
-
-        if (Math.abs(dx) < 0.0001 && Math.abs(dz) < 0.0001) {
-          this.prevPos.copy(curr);
+        if (!this.mapa || !this.mapa.activo) {
+          this.prev.copy(p);
           return;
         }
 
-        // Si fue una reubicación brusca (teletransporte)
+        const dx = p.x - this.prev.x;
+        const dz = p.z - this.prev.z;
+        if (Math.abs(dx) < 0.000001 && Math.abs(dz) < 0.000001) return;
+
         if (Math.sqrt(dx * dx + dz * dz) > 3.0) {
-          this.prevPos.copy(curr);
-          return;
-        }
-
-        let choco = false;
-
-        // 1. Verificación del avance en X
-        if (Math.abs(dx) > 0.0001) {
-          const sx = dx > 0 ? 1 : -1;
-          if (this.hayMuro(this.prevPos.x, this.prevPos.z, sx, 0, Math.abs(dx) + this.playerRadius)) {
-            curr.x = this.prevPos.x; // Detiene avance en X
-            choco = true;
+          // Reubicación (por ejemplo al volver de la nebulosa): se acepta solo si cae en zona válida
+          if (!this.mapa.permitido(p.x, p.z)) {
+            p.x = this.bueno.x;
+            p.z = this.bueno.z;
           }
+        } else {
+          // Avance normal: se frena en las paredes y se desliza por ellas
+          const r = this.mapa.mover(this.prev.x, this.prev.z, p.x, p.z);
+          p.x = r.x;
+          p.z = r.z;
         }
 
-        // 2. Verificación del avance en Z
-        if (Math.abs(dz) > 0.0001) {
-          const sz = dz > 0 ? 1 : -1;
-          if (this.hayMuro(curr.x, this.prevPos.z, 0, sz, Math.abs(dz) + this.playerRadius)) {
-            curr.z = this.prevPos.z; // Detiene avance en Z
-            choco = true;
-          }
+        if (this.mapa.permitido(p.x, p.z)) {
+          this.bueno.set(p.x, p.y, p.z);
+        } else {
+          p.x = this.bueno.x;
+          p.z = this.bueno.z;
         }
-
-        // 3. Apagado inmediato de inercia de velocidad de A-Frame
-        if (choco) {
-          const mc = this.el.components['movement-controls'];
-          if (mc && mc.velocity) {
-            mc.velocity.set(0, 0, 0); // Apaga la inercia acumulada para que no empuje a través del muro
-          }
-        }
-
-        // 4. Barrera de seguridad perimetral de la galería
-        if (curr.x < -20.0 || curr.x > 20.5 || curr.z < -25.5 || curr.z > 25.5 || curr.y < 0.5 || curr.y > 4.5) {
-          curr.copy(this.prevPos);
-        }
-
-        curr.y = 2.05; // Altura de piso fija
-        this.prevPos.copy(curr);
+        this.prev.copy(p);
       }
     });
 
@@ -1621,7 +1872,6 @@
     <a-entity id="grupo-5-obra-22"
               obra-interactiva="titulo: Título de Obra 22; desc: Descripción del cuadro 22; link: https://galerianebulosa.com/obras-destacadas/"
               position="20.00 2.05 0.54" rotation="0 -90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; rotate="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 22; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
