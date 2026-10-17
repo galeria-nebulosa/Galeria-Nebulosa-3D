@@ -515,6 +515,85 @@
     }
 
     // =========================================================================
+    // COMPONENTE DE COLISIÓN EFECTIVA CONTRA LAS PAREDES (ANTI-SALIDAS)
+    // =========================================================================
+    AFRAME.registerComponent('colision-paredes', {
+      init: function () {
+        this.prevPos = new THREE.Vector3();
+        this.raycaster = new THREE.Raycaster();
+        this.roomMesh = null;
+        this.playerRadius = 0.55; // Distancia mínima al muro
+
+        const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
+        if (roomEl) {
+          roomEl.addEventListener('model-loaded', () => {
+            this.roomMesh = roomEl.getObject3D('mesh');
+          });
+        }
+        this.prevPos.copy(this.el.object3D.position);
+      },
+      tick: function () {
+        // En el mirador exterior de la nebulosa no hay muros que restrinjan
+        if (enLaNebulosa) {
+          this.prevPos.copy(this.el.object3D.position);
+          return;
+        }
+
+        if (!this.roomMesh) {
+          const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
+          if (roomEl) this.roomMesh = roomEl.getObject3D('mesh');
+          if (!this.roomMesh) {
+            this.prevPos.copy(this.el.object3D.position);
+            return;
+          }
+        }
+
+        const curr = this.el.object3D.position;
+        const dx = curr.x - this.prevPos.x;
+        const dz = curr.z - this.prevPos.z;
+
+        // Si no se ha movido, solo actualizamos referencia
+        if (Math.abs(dx) < 0.0001 && Math.abs(dz) < 0.0001) {
+          this.prevPos.copy(curr);
+          return;
+        }
+
+        const rayOrigin = new THREE.Vector3(this.prevPos.x, 1.4, this.prevPos.z);
+
+        // 1. Verificación y deslizamiento en el eje X
+        if (Math.abs(dx) > 0.0001) {
+          const dirX = new THREE.Vector3(dx > 0 ? 1 : -1, 0, 0);
+          this.raycaster.set(rayOrigin, dirX);
+          this.raycaster.far = Math.abs(dx) + this.playerRadius;
+          const hitsX = this.raycaster.intersectObject(this.roomMesh, true);
+          const muroX = hitsX.find(h => Math.abs(h.face.normal.y) < 0.65);
+          if (muroX) {
+            curr.x = this.prevPos.x; // Bloquea avance en X contra el muro
+          }
+        }
+
+        // 2. Verificación y deslizamiento en el eje Z
+        if (Math.abs(dz) > 0.0001) {
+          const dirZ = new THREE.Vector3(0, 0, dz > 0 ? 1 : -1);
+          this.raycaster.set(new THREE.Vector3(curr.x, 1.4, this.prevPos.z), dirZ);
+          this.raycaster.far = Math.abs(dz) + this.playerRadius;
+          const hitsZ = this.raycaster.intersectObject(this.roomMesh, true);
+          const muroZ = hitsZ.find(h => Math.abs(h.face.normal.y) < 0.65);
+          if (muroZ) {
+            curr.z = this.prevPos.z; // Bloquea avance en Z contra el muro
+          }
+        }
+
+        // 3. Barrera de seguridad perimetral de la galería
+        if (curr.x < -21.0 || curr.x > 21.5 || curr.z < -26.5 || curr.z > 26.5 || curr.y < 0.5 || curr.y > 4.5) {
+          curr.copy(ultimaPosicionGaleria);
+        }
+
+        this.prevPos.copy(curr);
+      }
+    });
+
+    // =========================================================================
     // VISOR 3D FLOTANTE DE PREMIACIÓN (CLONA DIRECTO EL MODELO DE LA SALA)
     // =========================================================================
     let tScene, tCamera, tRenderer, tCurrentModel, tAnimId, tStageGroup;
@@ -1970,9 +2049,13 @@
 
 
     <!-- ========================================================= -->
-    <!-- CÁMARA / PUNTO DE INICIO                                  -->
+    <!-- CÁMARA / PUNTO DE INICIO (CON COLISIÓN ACTIVADA CONTRA PAREDES) -->
     <!-- ========================================================= -->
-    <a-entity id="rig" movement-controls="controls: keyboard; speed: 0.35; constrainToNavMesh: false;" position="-12.5 2.05 -10.0" rotation="0 90 0">
+    <a-entity id="rig" 
+              colision-paredes
+              movement-controls="controls: keyboard; speed: 0.35; constrainToNavMesh: false;" 
+              position="-12.5 2.05 -10.0" 
+              rotation="0 90 0">
       <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false; touchEnabled: true;"></a-camera>
     </a-entity>
 
