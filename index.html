@@ -515,78 +515,122 @@
     }
 
     // =========================================================================
-    // COMPONENTE DE COLISIÓN EFECTIVA CONTRA LAS PAREDES (ANTI-SALIDAS)
+    // COMPONENTE DE COLISIÓN CONTRA LAS PAREDES (CORREGIDO)
+    // - Usa copias invisibles del modelo con caras de doble lado, así el rayo
+    //   detecta el muro sin importar hacia qué lado "mira" la pared del modelo.
+    // - Lanza rayos a dos alturas (cuerpo y cabeza) en la dirección del movimiento.
+    // - Si choca, bloquea solo ese eje y deja deslizarse por la pared.
     // =========================================================================
     AFRAME.registerComponent('colision-paredes', {
       init: function () {
         this.prevPos = new THREE.Vector3();
         this.raycaster = new THREE.Raycaster();
-        this.roomMesh = null;
-        this.playerRadius = 0.55; // Distancia mínima al muro
-
-        const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
-        if (roomEl) {
-          roomEl.addEventListener('model-loaded', () => {
-            this.roomMesh = roomEl.getObject3D('mesh');
-          });
-        }
+        this.colisionadores = [];
+        this.construido = false;
+        this.playerRadius = 0.6;      // distancia mínima al muro
+        this.alturas = [0.7, 1.6];    // alturas (en metros) desde donde se lanzan los rayos
         this.prevPos.copy(this.el.object3D.position);
       },
+
+      // Crea copias invisibles (no se dibujan) del modelo de la sala solo para detectar choques
+      construirColisionadores: function () {
+        const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
+        if (!roomEl) return false;
+        const mesh = roomEl.getObject3D('mesh');
+        if (!mesh) return false;
+
+        mesh.updateMatrixWorld(true);
+        const matDoble = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+        const lista = [];
+
+        mesh.traverse((node) => {
+          if (node.isMesh && node.geometry) {
+            const proxy = new THREE.Mesh(node.geometry, matDoble);
+            proxy.matrixAutoUpdate = false;
+            proxy.matrixWorld.copy(node.matrixWorld);
+            lista.push(proxy);
+          }
+        });
+
+        this.colisionadores = lista;
+        return lista.length > 0;
+      },
+
+      // ¿Hay un muro adelante en esa dirección?
+      hayMuro: function (ox, oz, dirx, dirz, distancia) {
+        const origen = new THREE.Vector3();
+        const dir = new THREE.Vector3(dirx, 0, dirz);
+        const normalMundo = new THREE.Vector3();
+
+        for (let i = 0; i < this.alturas.length; i++) {
+          origen.set(ox, this.alturas[i], oz);
+          this.raycaster.set(origen, dir);
+          this.raycaster.near = 0;
+          this.raycaster.far = distancia;
+          const hits = this.raycaster.intersectObjects(this.colisionadores, false);
+          for (let j = 0; j < hits.length; j++) {
+            const h = hits[j];
+            if (!h.face) continue;
+            normalMundo.copy(h.face.normal).transformDirection(h.object.matrixWorld);
+            // Solo cuenta como muro si es una superficie vertical (no piso ni techo)
+            if (Math.abs(normalMundo.y) < 0.65) return true;
+          }
+        }
+        return false;
+      },
+
       tick: function () {
+        const curr = this.el.object3D.position;
+
         // En el mirador exterior de la nebulosa no hay muros que restrinjan
         if (enLaNebulosa) {
-          this.prevPos.copy(this.el.object3D.position);
+          this.prevPos.copy(curr);
           return;
         }
 
-        if (!this.roomMesh) {
-          const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
-          if (roomEl) this.roomMesh = roomEl.getObject3D('mesh');
-          if (!this.roomMesh) {
-            this.prevPos.copy(this.el.object3D.position);
+        // Prepara los colisionadores cuando el modelo de la sala ya cargó
+        if (!this.construido) {
+          this.construido = this.construirColisionadores();
+          if (!this.construido) {
+            this.prevPos.copy(curr);
             return;
           }
         }
 
-        const curr = this.el.object3D.position;
         const dx = curr.x - this.prevPos.x;
         const dz = curr.z - this.prevPos.z;
 
-        // Si no se ha movido, solo actualizamos referencia
+        // Si no se movió, solo actualizamos referencia
         if (Math.abs(dx) < 0.0001 && Math.abs(dz) < 0.0001) {
           this.prevPos.copy(curr);
           return;
         }
 
-        const rayOrigin = new THREE.Vector3(this.prevPos.x, 1.4, this.prevPos.z);
+        // Si hubo un salto grande (por ejemplo al volver de la nebulosa), no es caminar: se acepta
+        if (Math.sqrt(dx * dx + dz * dz) > 3) {
+          this.prevPos.copy(curr);
+          return;
+        }
 
-        // 1. Verificación y deslizamiento en el eje X
+        // 1. Eje X (bloquea y deja deslizar por el otro eje)
         if (Math.abs(dx) > 0.0001) {
-          const dirX = new THREE.Vector3(dx > 0 ? 1 : -1, 0, 0);
-          this.raycaster.set(rayOrigin, dirX);
-          this.raycaster.far = Math.abs(dx) + this.playerRadius;
-          const hitsX = this.raycaster.intersectObject(this.roomMesh, true);
-          const muroX = hitsX.find(h => Math.abs(h.face.normal.y) < 0.65);
-          if (muroX) {
-            curr.x = this.prevPos.x; // Bloquea avance en X contra el muro
+          const signoX = dx > 0 ? 1 : -1;
+          if (this.hayMuro(this.prevPos.x, this.prevPos.z, signoX, 0, Math.abs(dx) + this.playerRadius)) {
+            curr.x = this.prevPos.x;
           }
         }
 
-        // 2. Verificación y deslizamiento en el eje Z
+        // 2. Eje Z
         if (Math.abs(dz) > 0.0001) {
-          const dirZ = new THREE.Vector3(0, 0, dz > 0 ? 1 : -1);
-          this.raycaster.set(new THREE.Vector3(curr.x, 1.4, this.prevPos.z), dirZ);
-          this.raycaster.far = Math.abs(dz) + this.playerRadius;
-          const hitsZ = this.raycaster.intersectObject(this.roomMesh, true);
-          const muroZ = hitsZ.find(h => Math.abs(h.face.normal.y) < 0.65);
-          if (muroZ) {
-            curr.z = this.prevPos.z; // Bloquea avance en Z contra el muro
+          const signoZ = dz > 0 ? 1 : -1;
+          if (this.hayMuro(curr.x, this.prevPos.z, 0, signoZ, Math.abs(dz) + this.playerRadius)) {
+            curr.z = this.prevPos.z;
           }
         }
 
-        // 3. Barrera de seguridad perimetral de la galería
+        // 3. Barrera de seguridad perimetral de la galería (devuelve al último punto válido)
         if (curr.x < -21.0 || curr.x > 21.5 || curr.z < -26.5 || curr.z > 26.5 || curr.y < 0.5 || curr.y > 4.5) {
-          curr.copy(ultimaPosicionGaleria);
+          curr.copy(this.prevPos);
         }
 
         this.prevPos.copy(curr);
@@ -1576,7 +1620,6 @@
     <a-entity id="grupo-5-obra-22"
               obra-interactiva="titulo: Título de Obra 22; desc: Descripción del cuadro 22; link: https://galerianebulosa.com/obras-destacadas/"
               position="20.00 2.05 0.54" rotation="0 -90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; rotate="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 22; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
