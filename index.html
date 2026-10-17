@@ -50,7 +50,6 @@
       max-width: 440px;
       width: 100%;
       color: #ffffff;
-      font-family: 'Poppins', sans-serif;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(168, 85, 247, 0.25);
       position: relative;
       animation: modalFadeIn 0.22s ease-out;
@@ -221,7 +220,6 @@
       overflow: hidden;
       display: flex;
       animation: modalFadeIn 0.25s ease-out;
-      font-family: 'Poppins', sans-serif;
     }
     #trofeo-viewer-canvas-wrap {
       flex: 1;
@@ -312,7 +310,6 @@
       border-radius: 16px;
       padding: 16px 14px;
       color: #ffffff;
-      font-family: 'Poppins', sans-serif;
       z-index: 9999999 !important;
       box-shadow: 0 12px 36px rgba(0,0,0,0.6);
       display: flex;
@@ -353,7 +350,6 @@
       justify-content: center;
       font-size: 15px;
       font-weight: 600;
-      font-family: 'Poppins', sans-serif;
       color: #f5f5fa;
       cursor: pointer !important;
       transition: all 0.1s ease;
@@ -408,7 +404,6 @@
       padding: 9px 12px;
       font-size: 11px;
       font-weight: 700;
-      font-family: 'Poppins', sans-serif;
       cursor: pointer !important;
       box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
       transition: all 0.2s ease;
@@ -515,24 +510,21 @@
     }
 
     // =========================================================================
-    // COMPONENTE DE COLISIÓN CONTRA LAS PAREDES (CORREGIDO)
-    // - Usa copias invisibles del modelo con caras de doble lado, así el rayo
-    //   detecta el muro sin importar hacia qué lado "mira" la pared del modelo.
-    // - Lanza rayos a dos alturas (cuerpo y cabeza) en la dirección del movimiento.
-    // - Si choca, bloquea solo ese eje y deja deslizarse por la pared.
+    // COLISIÓN DIRECTA CON LAS MALLAS DE BLENDER (wall_1, wall_2, windows, border)
+    // + ANULACIÓN TOTAL DE INERCIA EN TOCK (IMPOSIBLE DE ATRAVESAR)
     // =========================================================================
     AFRAME.registerComponent('colision-paredes', {
       init: function () {
         this.prevPos = new THREE.Vector3();
         this.raycaster = new THREE.Raycaster();
-        this.colisionadores = [];
+        this.mallasMuros = [];
         this.construido = false;
-        this.playerRadius = 0.6;      // distancia mínima al muro
-        this.alturas = [0.7, 1.6];    // alturas (en metros) desde donde se lanzan los rayos
+        this.playerRadius = 0.65; // Distancia segura de parada
+        this.alturas = [1.0, 1.8]; // Rayos a nivel de torso y cabeza
         this.prevPos.copy(this.el.object3D.position);
       },
 
-      // Crea copias invisibles (no se dibujan) del modelo de la sala solo para detectar choques
+      // Extrae directamente las mallas de Blender identificadas
       construirColisionadores: function () {
         const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
         if (!roomEl) return false;
@@ -540,26 +532,33 @@
         if (!mesh) return false;
 
         mesh.updateMatrixWorld(true);
-        const matDoble = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
         const lista = [];
 
         mesh.traverse((node) => {
           if (node.isMesh && node.geometry) {
-            const proxy = new THREE.Mesh(node.geometry, matDoble);
-            proxy.matrixAutoUpdate = false;
-            proxy.matrixWorld.copy(node.matrixWorld);
-            lista.push(proxy);
+            const nombre = (node.name || "").toLowerCase();
+            const matNombre = (node.material && node.material.name ? node.material.name : "").toLowerCase();
+            const idObj = nombre + " " + matNombre;
+
+            // Detección exacta de las paredes de Blender (wall_1, wall_2, windows, border)
+            if (idObj.includes('wall') || idObj.includes('window') || idObj.includes('border') || idObj.includes('vidrio') || idObj.includes('panel')) {
+              // Creamos un proxy de doble cara para detectar choques de frente y de espaldas
+              const matDoble = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+              const proxy = new THREE.Mesh(node.geometry, matDoble);
+              proxy.matrixAutoUpdate = false;
+              proxy.matrixWorld.copy(node.matrixWorld);
+              lista.push(proxy);
+            }
           }
         });
 
-        this.colisionadores = lista;
+        this.mallasMuros = lista;
         return lista.length > 0;
       },
 
-      // ¿Hay un muro adelante en esa dirección?
       hayMuro: function (ox, oz, dirx, dirz, distancia) {
         const origen = new THREE.Vector3();
-        const dir = new THREE.Vector3(dirx, 0, dirz);
+        const dir = new THREE.Vector3(dirx, 0, dirz).normalize();
         const normalMundo = new THREE.Vector3();
 
         for (let i = 0; i < this.alturas.length; i++) {
@@ -567,72 +566,82 @@
           this.raycaster.set(origen, dir);
           this.raycaster.near = 0;
           this.raycaster.far = distancia;
-          const hits = this.raycaster.intersectObjects(this.colisionadores, false);
+          const hits = this.raycaster.intersectObjects(this.mallasMuros, false);
           for (let j = 0; j < hits.length; j++) {
             const h = hits[j];
             if (!h.face) continue;
             normalMundo.copy(h.face.normal).transformDirection(h.object.matrixWorld);
-            // Solo cuenta como muro si es una superficie vertical (no piso ni techo)
-            if (Math.abs(normalMundo.y) < 0.65) return true;
+            // Si es un muro vertical, confirma el bloqueo
+            if (Math.abs(normalMundo.y) < 0.70) return true;
           }
         }
         return false;
       },
 
-      tick: function () {
-        const curr = this.el.object3D.position;
-
-        // En el mirador exterior de la nebulosa no hay muros que restrinjan
+      // Tock se ejecuta DESPUÉS de que el teclado mueve al jugador
+      tock: function () {
         if (enLaNebulosa) {
-          this.prevPos.copy(curr);
+          this.prevPos.copy(this.el.object3D.position);
           return;
         }
 
-        // Prepara los colisionadores cuando el modelo de la sala ya cargó
         if (!this.construido) {
           this.construido = this.construirColisionadores();
           if (!this.construido) {
-            this.prevPos.copy(curr);
+            this.prevPos.copy(this.el.object3D.position);
             return;
           }
         }
 
+        const curr = this.el.object3D.position;
         const dx = curr.x - this.prevPos.x;
         const dz = curr.z - this.prevPos.z;
 
-        // Si no se movió, solo actualizamos referencia
         if (Math.abs(dx) < 0.0001 && Math.abs(dz) < 0.0001) {
           this.prevPos.copy(curr);
           return;
         }
 
-        // Si hubo un salto grande (por ejemplo al volver de la nebulosa), no es caminar: se acepta
-        if (Math.sqrt(dx * dx + dz * dz) > 3) {
+        // Si fue una reubicación brusca (teletransporte)
+        if (Math.sqrt(dx * dx + dz * dz) > 3.0) {
           this.prevPos.copy(curr);
           return;
         }
 
-        // 1. Eje X (bloquea y deja deslizar por el otro eje)
+        let choco = false;
+
+        // 1. Verificación del avance en X
         if (Math.abs(dx) > 0.0001) {
-          const signoX = dx > 0 ? 1 : -1;
-          if (this.hayMuro(this.prevPos.x, this.prevPos.z, signoX, 0, Math.abs(dx) + this.playerRadius)) {
-            curr.x = this.prevPos.x;
+          const sx = dx > 0 ? 1 : -1;
+          if (this.hayMuro(this.prevPos.x, this.prevPos.z, sx, 0, Math.abs(dx) + this.playerRadius)) {
+            curr.x = this.prevPos.x; // Detiene avance en X
+            choco = true;
           }
         }
 
-        // 2. Eje Z
+        // 2. Verificación del avance en Z
         if (Math.abs(dz) > 0.0001) {
-          const signoZ = dz > 0 ? 1 : -1;
-          if (this.hayMuro(curr.x, this.prevPos.z, 0, signoZ, Math.abs(dz) + this.playerRadius)) {
-            curr.z = this.prevPos.z;
+          const sz = dz > 0 ? 1 : -1;
+          if (this.hayMuro(curr.x, this.prevPos.z, 0, sz, Math.abs(dz) + this.playerRadius)) {
+            curr.z = this.prevPos.z; // Detiene avance en Z
+            choco = true;
           }
         }
 
-        // 3. Barrera de seguridad perimetral de la galería (devuelve al último punto válido)
-        if (curr.x < -21.0 || curr.x > 21.5 || curr.z < -26.5 || curr.z > 26.5 || curr.y < 0.5 || curr.y > 4.5) {
+        // 3. Apagado inmediato de inercia de velocidad de A-Frame
+        if (choco) {
+          const mc = this.el.components['movement-controls'];
+          if (mc && mc.velocity) {
+            mc.velocity.set(0, 0, 0); // Apaga la inercia acumulada para que no empuje a través del muro
+          }
+        }
+
+        // 4. Barrera de seguridad perimetral de la galería
+        if (curr.x < -20.0 || curr.x > 20.5 || curr.z < -25.5 || curr.z > 25.5 || curr.y < 0.5 || curr.y > 4.5) {
           curr.copy(this.prevPos);
         }
 
+        curr.y = 2.05; // Altura de piso fija
         this.prevPos.copy(curr);
       }
     });
@@ -679,7 +688,6 @@
       const overlay = document.getElementById('trofeo-viewer-overlay');
       overlay.style.display = 'flex';
 
-      // Reproducir video cósmico de fondo detrás del trofeo
       const bgVideo = document.getElementById('trofeo-bg-video');
       if (bgVideo) {
         bgVideo.currentTime = 0;
@@ -710,7 +718,6 @@
     function initThreeTrofeo(wrap) {
       tScene = new THREE.Scene();
       
-      // Cámara centrada y equilibrada
       tCamera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 50);
       tCamera.position.set(0, 0.45, 3.8);
       tCamera.lookAt(0, 0.25, 0);
@@ -722,7 +729,6 @@
       tRenderer.toneMappingExposure = 1.0;
       wrap.appendChild(tRenderer.domElement);
 
-      // Iluminación suave de estudio
       const amb = new THREE.AmbientLight(0xffffff, 1.25);
       tScene.add(amb);
       const dir1 = new THREE.DirectionalLight(0xffeedd, 2.2);
@@ -732,7 +738,7 @@
       rim.position.set(-4, 3, -3);
       tScene.add(rim);
 
-      // BASE / PEDESTAL CÓSMICO ESTÁTICO (NO GIRA)
+      // Pedestal circular estático
       tStageGroup = new THREE.Group();
       
       const stageGeo = new THREE.CylinderGeometry(1.5, 1.7, 0.22, 48);
@@ -745,7 +751,6 @@
       stageMesh.position.y = -0.95;
       tStageGroup.add(stageMesh);
 
-      // Anillo de energía iluminado sobre el pedestal
       const ringGeo = new THREE.RingGeometry(1.05, 1.48, 48);
       const ringMat = new THREE.MeshBasicMaterial({
         color: 0xc084fc,
@@ -760,7 +765,6 @@
 
       tScene.add(tStageGroup);
 
-      // Rotación interactiva con el ratón o táctil
       wrap.addEventListener('mousedown', (e) => { tIsDragging = true; tPrevX = e.clientX; });
       window.addEventListener('mouseup', () => { tIsDragging = false; });
       wrap.addEventListener('mousemove', (e) => {
@@ -798,19 +802,16 @@
 
       const mesh = aframeEntity.getObject3D('mesh');
       if (mesh) {
-        // Clona el modelo ya descargado en la escena: carga inmediata
         tCurrentModel = mesh.clone(true);
 
         const box = new THREE.Box3().setFromObject(tCurrentModel);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
 
-        // Escala vertical equilibrada
         const maxDim = Math.max(size.x, size.y, size.z);
         const scale = 2.15 / maxDim;
         tCurrentModel.scale.set(scale, scale, scale);
 
-        // Apoyar el trofeo directamente sobre el pedestal estático y centrado en X/Z
         const newBox = new THREE.Box3().setFromObject(tCurrentModel);
         tCurrentModel.position.x = -center.x * scale;
         tCurrentModel.position.y = -0.835 - (newBox.min.y);
@@ -824,7 +825,7 @@
     function animarVisorTrofeo() {
       tAnimId = requestAnimationFrame(animarVisorTrofeo);
       if (tCurrentModel && !tIsDragging) {
-        tCurrentModel.rotation.y += 0.008; // Únicamente el trofeo gira 360°
+        tCurrentModel.rotation.y += 0.008; // Solo el trofeo gira
       }
       tRenderer.render(tScene, tCamera);
     }
@@ -1620,6 +1621,7 @@
     <a-entity id="grupo-5-obra-22"
               obra-interactiva="titulo: Título de Obra 22; desc: Descripción del cuadro 22; link: https://galerianebulosa.com/obras-destacadas/"
               position="20.00 2.05 0.54" rotation="0 -90 0">
+      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; rotate="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 22; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
@@ -2092,7 +2094,7 @@
 
 
     <!-- ========================================================= -->
-    <!-- CÁMARA / PUNTO DE INICIO (CON COLISIÓN ACTIVADA CONTRA PAREDES) -->
+    <!-- CÁMARA CON FRENO ABSOLUTO CONTRA PAREDES DE BLENDER        -->
     <!-- ========================================================= -->
     <a-entity id="rig" 
               colision-paredes
