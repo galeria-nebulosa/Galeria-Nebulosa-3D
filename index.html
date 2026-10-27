@@ -510,6 +510,19 @@
     }
 
     // =========================================================================
+    // DELIMITADOR PERIMETRAL DE SEGURIDAD (evita salir de la galería en cualquier circunstancia)
+    // =========================================================================
+    function esDentroDeLaGaleria(x, z) {
+      // Zona 1: Sala de los Trofeos (Obras 1 a 9)
+      const enTrofeos = (x >= -10.1 && x <= 0.2 && z >= -25.2 && z <= -14.5);
+      // Zona 2: Pasillo Principal completo (de TV exterior a -19.7 hasta el fondo a +19.8)
+      const enPasillo = (x >= -20.1 && x <= 20.1 && z >= -15.2 && z <= -4.8);
+      // Zona 3: Ala derecha y corredores en L (Obras 10 a 48)
+      const enAlaDerecha = (x >= -0.2 && x <= 20.1 && z >= -5.2 && z <= 25.2);
+      return (enTrofeos || enPasillo || enAlaDerecha);
+    }
+
+    // =========================================================================
     // COLISIÓN CON LAS PAREDES (el jugador no puede salir de la galería)
     // =========================================================================
     // ==CORE-START==
@@ -765,6 +778,8 @@
       info.zonaAbierta = elegido.res.toca;
 
       var permitido = function (x, z) {
+        // Barrera perimetral infranqueable
+        if (!esDentroDeLaGaleria(x, z)) return false;
         var ix2 = Math.floor((x - minX) / CELDA), iz2 = Math.floor((z - minZ) / CELDA);
         if (ix2 < 0 || iz2 < 0 || ix2 >= W || iz2 >= H) return false;
         return cfg.alc[iz2 * W + ix2] === 1;
@@ -790,8 +805,22 @@
     }
     // ==CORE-END==
 
+    // SYSTEM: Se ejecuta en cada fotograma DESPUÉS de todos los components (incluyendo movement-controls)
+    // y ANTES de que Three.js renderice el cuadro en la pantalla.
+    AFRAME.registerSystem('colision-paredes', {
+      init: function () {
+        this.comp = null;
+      },
+      tick: function () {
+        if (this.comp) {
+          this.comp.corregir();
+        }
+      }
+    });
+
     AFRAME.registerComponent('colision-paredes', {
       init: function () {
+        this.system.comp = this;
         const p = this.el.object3D.position;
         this.mapa = null;
         this.listo = false;
@@ -800,22 +829,18 @@
         this.bueno = new THREE.Vector3().copy(p);
         this.cuadros = 0;
         window.colisionEstado = 'esperando el modelo de la sala';
+
+        // Asegurar que la cámara hija no mueva su posición relativa con WASD
+        this.camEl = this.el.querySelector('a-camera') || this.el.querySelector('[camera]');
+        if (this.camEl) {
+          this.camEl.setAttribute('wasd-controls', 'enabled: false');
+        }
       },
 
-      // Se coloca de ÚLTIMO en la cola de actualización de la escena: así corrige la posición
-      // justo después de que el teclado mueve al jugador y ANTES de dibujar el cuadro.
-      // (Sin esto, con pocos cuadros por segundo se veía la cámara atravesar la pared un instante.)
-      alFinalDeLaCola: function () {
-        const escena = this.el.sceneEl;
-        if (!escena || !escena.behaviors || !escena.behaviors.tick) return;
-        const cola = escena.behaviors.tick;
-        if (cola[cola.length - 1] === this) return;
-        setTimeout(() => {
-          try {
-            escena.removeBehavior(this);
-            escena.addBehavior(this);
-          } catch (err) { /* sin consecuencias */ }
-        }, 0);
+      remove: function () {
+        if (this.system.comp === this) {
+          this.system.comp = null;
+        }
       },
 
       // Lee todos los triángulos del modelo de la sala (en coordenadas del mundo)
@@ -850,7 +875,7 @@
             }
           });
 
-          const ojoY = this.el.object3D.position.y;
+          const ojoY = this.el.object3D.position.y || 2.05;
           this.mapa = crearMapaColision(tris, { ojoY: ojoY, inicio: this.inicio });
         } catch (err) {
           console.warn('[Colisión] error al preparar las paredes:', err);
@@ -869,8 +894,14 @@
         return true;
       },
 
-      tick: function () {
+      // Frena en las paredes antes del renderizado
+      corregir: function () {
         const p = this.el.object3D.position;
+
+        // Mantener la cámara interna fija en (0,0,0) del rig
+        if (this.camEl && this.camEl.object3D) {
+          this.camEl.object3D.position.set(0, 0, 0);
+        }
 
         // En el mirador exterior de la nebulosa no hay muros que restrinjan
         if (enLaNebulosa) {
@@ -878,41 +909,65 @@
           return;
         }
 
-        if (this.cuadros++ % 60 === 0) this.alFinalDeLaCola();
+        // Si el modelo aún no termina de cargar, aplicar bloqueo perimetral de inmediato
+        if (!this.listo) {
+          this.construir();
+          if (!this.listo) {
+            p.y = 2.05;
+            if (!esDentroDeLaGaleria(p.x, this.prev.z)) p.x = this.prev.x;
+            if (!esDentroDeLaGaleria(p.x, p.z)) p.z = this.prev.z;
+            if (!esDentroDeLaGaleria(p.x, p.z)) { p.x = this.bueno.x; p.z = this.bueno.z; }
+            else { this.bueno.set(p.x, p.y, p.z); }
+            this.prev.copy(p);
+            return;
+          }
+        }
 
-        if (!this.listo && !this.construir()) {
-          this.prev.copy(p);
-          return;
-        }
-        if (!this.mapa || !this.mapa.activo) {
-          this.prev.copy(p);
-          return;
-        }
+        p.y = 2.05;
 
         const dx = p.x - this.prev.x;
         const dz = p.z - this.prev.z;
         if (Math.abs(dx) < 0.000001 && Math.abs(dz) < 0.000001) return;
 
+        // Reubicación / Teletransporte (ej. al volver de la nebulosa)
         if (Math.sqrt(dx * dx + dz * dz) > 3.0) {
-          // Reubicación (por ejemplo al volver de la nebulosa): se acepta solo si cae en zona válida
-          if (!this.mapa.permitido(p.x, p.z)) {
+          if (this.mapa && this.mapa.activo && this.mapa.permitido(p.x, p.z)) {
+            this.bueno.set(p.x, p.y, p.z);
+          } else if (esDentroDeLaGaleria(p.x, p.z)) {
+            this.bueno.set(p.x, p.y, p.z);
+          } else {
+            p.x = this.bueno.x;
+            p.z = this.bueno.z;
+          }
+          this.prev.copy(p);
+          return;
+        }
+
+        // Avance normal por teclado (WASD/flechas) o botones en pantalla
+        if (this.mapa && this.mapa.activo) {
+          const r = this.mapa.mover(this.prev.x, this.prev.z, p.x, p.z);
+          p.x = r.x;
+          p.z = r.z;
+
+          if (this.mapa.permitido(p.x, p.z)) {
+            this.bueno.set(p.x, p.y, p.z);
+          } else {
             p.x = this.bueno.x;
             p.z = this.bueno.z;
           }
         } else {
-          // Avance normal: se frena en las paredes y se desliza por ellas
-          const r = this.mapa.mover(this.prev.x, this.prev.z, p.x, p.z);
-          p.x = r.x;
-          p.z = r.z;
+          // Bloqueo perimetral fallback
+          if (!esDentroDeLaGaleria(p.x, this.prev.z)) p.x = this.prev.x;
+          if (!esDentroDeLaGaleria(p.x, p.z)) p.z = this.prev.z;
+          if (!esDentroDeLaGaleria(p.x, p.z)) { p.x = this.bueno.x; p.z = this.bueno.z; }
+          else { this.bueno.set(p.x, p.y, p.z); }
         }
 
-        if (this.mapa.permitido(p.x, p.z)) {
-          this.bueno.set(p.x, p.y, p.z);
-        } else {
-          p.x = this.bueno.x;
-          p.z = this.bueno.z;
-        }
         this.prev.copy(p);
+      },
+
+      tick: function () {
+        this.corregir();
       }
     });
 
@@ -2370,7 +2425,10 @@
               movement-controls="controls: keyboard; speed: 0.35; constrainToNavMesh: false;" 
               position="-12.5 2.05 -10.0" 
               rotation="0 90 0">
-      <a-camera position="0 0 0" look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false; touchEnabled: true;"></a-camera>
+      <a-camera position="0 0 0" 
+                wasd-controls="enabled: false;" 
+                look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false; touchEnabled: true;">
+      </a-camera>
     </a-entity>
 
   </a-scene>
