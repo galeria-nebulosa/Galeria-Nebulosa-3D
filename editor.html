@@ -403,7 +403,7 @@
     function abrirModalVideo(videoId) {
       if (document.querySelector('#aframeInspector, [data-aframe-inspector]')) return;
       const iframe = document.getElementById('youtube-player-frame');
-      iframe.src = `https://www.youtube.com/embed/${videoId || 'GZRF6dSq7tk'}?autoplay=1&rel=0`;
+      iframe.src = `https://www.youtube.com/embed/${videoId || '4HOu4_57T1U'}?autoplay=1&rel=0`;
       document.getElementById('video-modal-overlay').style.display = 'flex';
     }
 
@@ -705,7 +705,7 @@
     // COMPONENTE DE PANTALLA DE VIDEO YOUTUBE EN 3D
     AFRAME.registerComponent('pantalla-youtube', {
       schema: {
-        videoId: { type: 'string', default: 'GZRF6dSq7tk' },
+        videoId: { type: 'string', default: '4HOu4_57T1U' },
         titulo: { type: 'string', default: 'Presentación Galería Nebulosa' }
       },
       init: function () {
@@ -2011,10 +2011,10 @@
       <a-box width="3.74" height="2.14" depth="0.095" color="#9333ea" material="roughness: 0.2; emissive: #7c3aed; emissiveIntensity: 0.35"></a-box>
       <!-- Superficie con previsualización del video y disparador -->
       <a-plane position="0 0 0.055" width="3.60" height="2.025"
-               pantalla-youtube="videoId: GZRF6dSq7tk; titulo: Video de Presentación;">
+               pantalla-youtube="videoId: 4HOu4_57T1U; titulo: Video de Presentación;">
       </a-plane>
       <a-plane position="0 0 -0.055" rotation="0 180 0" width="3.60" height="2.025"
-               pantalla-youtube="videoId: GZRF6dSq7tk; titulo: Video de Presentación;">
+               pantalla-youtube="videoId: 4HOu4_57T1U; titulo: Video de Presentación;">
       </a-plane>
     </a-entity>
 
