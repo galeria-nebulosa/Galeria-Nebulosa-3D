@@ -5,9 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Galería Virtual Nebulosa</title>
   
-  <!-- Fuente oficial Poppins -->
+  <!-- Preconexiones y precarga para acelerar inicio en GitHub Pages sin pantalla en negro ni celeste -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://aframe.io">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://images.weserv.nl">
+  <link rel="dns-prefetch" href="https://www.youtube.com">
+  <link rel="preload" href="galeria.glb" as="fetch" type="model/gltf-binary" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -50,6 +55,7 @@
       max-width: 440px;
       width: 100%;
       color: #ffffff;
+      font-family: 'Poppins', sans-serif;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(168, 85, 247, 0.25);
       position: relative;
       animation: modalFadeIn 0.22s ease-out;
@@ -63,369 +69,639 @@
     #artwork-modal-close {
       position: absolute;
       top: 14px;
-      right: 16px;
+      right: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e9d5ff;
       width: 32px;
       height: 32px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 50%;
-      color: #e9d5ff;
+      cursor: pointer;
+      font-size: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.2s;
     }
     #artwork-modal-close:hover {
-      background: rgba(239, 68, 68, 0.3);
+      background: rgba(168, 85, 247, 0.4);
       color: #ffffff;
-      border-color: #ef4444;
-    }
-    #artwork-modal-badge {
-      display: inline-block;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: #c084fc;
-      background: rgba(192, 132, 252, 0.15);
-      border: 1px solid rgba(192, 132, 252, 0.3);
-      border-radius: 12px;
-      padding: 3px 10px;
-      margin-bottom: 10px;
-      font-weight: 600;
+      transform: rotate(90deg);
     }
     #artwork-modal-title {
-      font-size: 20px;
+      font-size: 1.35rem;
       font-weight: 700;
       margin: 0 0 10px 0;
-      color: #ffffff;
+      padding-right: 30px;
+      background: linear-gradient(135deg, #ffffff 0%, #e9d5ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       line-height: 1.3;
     }
     #artwork-modal-desc {
-      font-size: 13px;
-      line-height: 1.6;
+      font-size: 0.92rem;
+      line-height: 1.55;
       color: #d8b4fe;
       margin: 0 0 20px 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 220px;
+      overflow-y: auto;
     }
-    #artwork-modal-link {
+    #artwork-modal-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       width: 100%;
-      box-sizing: border-box;
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      padding: 12px 18px;
+      background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
       color: #ffffff;
       text-decoration: none;
-      padding: 11px 18px;
-      border-radius: 10px;
-      font-size: 13px;
       font-weight: 600;
-      transition: all 0.2s ease;
-      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+      font-size: 0.95rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+      transition: all 0.2s;
     }
-    #artwork-modal-link:hover {
-      background: linear-gradient(135deg, #6d28d9, #9333ea);
-      transform: translateY(-1px);
+    #artwork-modal-btn:hover {
+      background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(124, 58, 237, 0.6);
     }
 
-    /* REPRODUCTOR FLOTANTE DE VIDEO YOUTUBE CON BOTÓN 'X' */
+    /* PANTALLA NEBULOSA */
+    #overlay-nebulosa {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 999999;
+      background: #000;
+      overflow: hidden;
+      cursor: default;
+    }
+    #overlay-nebulosa video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    #btn-volver-galeria {
+      position: absolute;
+      top: 24px; left: 24px;
+      z-index: 1000000;
+      background: linear-gradient(135deg, rgba(30, 20, 50, 0.85), rgba(15, 10, 25, 0.85));
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      color: #fff;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 15px rgba(168,85,247,0.3);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #btn-volver-galeria:hover {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(124, 58, 237, 0.9));
+      transform: scale(1.05);
+      box-shadow: 0 6px 25px rgba(168,85,247,0.6);
+    }
+
+    /* MODAL DE VIDEO YOUTUBE */
     #video-modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(8, 6, 16, 0.88);
-      backdrop-filter: blur(12px);
-      z-index: 10000001;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      box-sizing: border-box;
-    }
-    #video-modal-wrapper {
-      position: relative;
-      width: 100%;
-      max-width: 860px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 10px;
-    }
-    #video-modal-close {
-      position: relative;
-      background: rgba(28, 20, 48, 0.95);
-      border: 1.5px solid rgba(192, 132, 252, 0.6);
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
-      color: #ffffff;
-      font-size: 20px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 15px rgba(168, 85, 247, 0.5);
-      transition: all 0.15s ease;
-      z-index: 10000003;
-    }
-    #video-modal-close:hover {
-      background: #ef4444;
-      border-color: #ef4444;
-      transform: scale(1.1);
-    }
-    #video-modal-container {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: #000000;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1.5px solid rgba(192, 132, 252, 0.45);
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.4);
-      animation: modalFadeIn 0.22s ease-out;
-    }
-    #video-modal-container iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-
-    /* VISOR 3D FLOTANTE DE PREMIACIÓN (SHOWCASE DEL TROFEO) */
-    #trofeo-viewer-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(5, 3, 10, 0.88);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: rgba(10, 8, 18, 0.8);
+      backdrop-filter: blur(10px);
       z-index: 10000002;
       align-items: center;
       justify-content: center;
-      padding: 16px;
-      box-sizing: border-box;
+      padding: 20px;
     }
-    #trofeo-viewer-container {
-      position: relative;
+    #video-modal {
+      background: linear-gradient(145deg, rgba(28, 20, 48, 0.98), rgba(16, 12, 28, 0.98));
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 900px;
       width: 100%;
-      max-width: 960px;
-      height: 82vh;
-      max-height: 620px;
-      background: linear-gradient(145deg, rgba(20, 12, 38, 0.98), rgba(10, 6, 20, 0.98));
-      border: 1.5px solid rgba(192, 132, 252, 0.45);
-      border-radius: 26px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 45px rgba(168, 85, 247, 0.35);
-      overflow: hidden;
-      display: flex;
-      animation: modalFadeIn 0.25s ease-out;
-    }
-    #trofeo-viewer-canvas-wrap {
-      flex: 1;
-      height: 100%;
-      position: relative;
-      overflow: hidden;
-      cursor: grab !important;
-    }
-    #trofeo-viewer-canvas-wrap:active {
-      cursor: grabbing !important;
-    }
-    #trofeo-bg-video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.65;
-      pointer-events: none;
-      z-index: 1;
-    }
-    #trofeo-viewer-canvas-wrap canvas {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-    }
-    #trofeo-viewer-card {
-      width: 340px;
-      background: rgba(16, 10, 30, 0.95);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-left: 1.5px solid rgba(192, 132, 252, 0.3);
-      padding: 34px 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
       color: #ffffff;
-      z-index: 10;
-      box-sizing: border-box;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(168, 85, 247, 0.3);
+      position: relative;
+      animation: modalFadeIn 0.22s ease-out;
+      cursor: default;
     }
-    #trofeo-viewer-close {
+    #video-modal-close {
       position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 38px;
-      height: 38px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      top: -14px;
+      right: -14px;
+      background: #7c3aed;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      color: #ffffff;
+      cursor: pointer;
       font-size: 18px;
-      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      z-index: 30;
-      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      transition: all 0.2s;
     }
-    #trofeo-viewer-close:hover {
+    #video-modal-close:hover {
       background: #ef4444;
-      border-color: #ef4444;
-      transform: scale(1.08);
+      transform: scale(1.1);
     }
-    @media (max-width: 768px) {
-      #trofeo-viewer-container {
-        flex-direction: column;
-        height: 88vh;
-      }
-      #trofeo-viewer-card {
-        width: 100%;
-        height: auto;
-        padding: 20px 22px;
-        border-left: none;
-        border-top: 1.5px solid rgba(192, 132, 252, 0.3);
-      }
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #000;
+    }
+    .video-container iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      border: 0;
     }
 
-    /* GUÍA DE NAVEGACIÓN Y BOTONES EN PANTALLA */
-    #nav-guide {
+    /* MODAL DE VISOR 3D FLOTANTE PARA TROFEOS */
+    #trofeo-modal-overlay {
+      display: none;
       position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      right: 20px;
-      background: rgba(14, 14, 20, 0.92);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 16px;
-      padding: 16px 14px;
+      inset: 0;
+      background: rgba(10, 8, 18, 0.75);
+      backdrop-filter: blur(10px);
+      z-index: 10000003;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    #trofeo-modal {
+      background: linear-gradient(145deg, rgba(28, 20, 48, 0.98), rgba(16, 12, 28, 0.98));
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 520px;
+      width: 100%;
       color: #ffffff;
-      z-index: 9999999 !important;
-      box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(168, 85, 247, 0.3);
+      position: relative;
+      animation: modalFadeIn 0.22s ease-out;
+      cursor: default;
+    }
+    #trofeo-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e9d5ff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    #trofeo-modal-close:hover {
+      background: rgba(168, 85, 247, 0.4);
+      color: #ffffff;
+      transform: rotate(90deg);
+    }
+    #trofeo-modal-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+      background: linear-gradient(135deg, #ffd700 0%, #fff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.3;
+    }
+    #trofeo-modal-sub {
+      font-size: 0.88rem;
+      color: #c084fc;
+      margin: 0 0 16px 0;
+    }
+    #trofeo-canvas-container {
+      width: 100%;
+      height: 300px;
+      background: radial-gradient(circle, rgba(60, 40, 100, 0.5) 0%, rgba(10, 8, 18, 0.95) 75%);
+      border-radius: 14px;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+    }
+    #trofeo-canvas-container:active {
+      cursor: grabbing;
+    }
+    #trofeo-canvas-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+    }
+
+    /* BARRA SUPERIOR */
+    #top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 52px;
+      background: rgba(18, 12, 32, 0.75);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      color: #fff;
+    }
+    #top-bar-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #top-bar-dot {
+      width: 8px; height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #ef4444;
+      animation: pulseDot 2s infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+    #top-bar-actions {
+      display: flex;
       align-items: center;
       gap: 10px;
-      user-select: none;
-      cursor: default !important;
     }
-
-    .guide-title {
+    .top-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e9d5ff;
+      padding: 6px 14px;
       font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: #9c9cb8;
-      font-weight: 700;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .top-btn:hover {
+      background: rgba(168, 85, 247, 0.3);
+      color: #fff;
+      border-color: rgba(168, 85, 247, 0.5);
     }
 
-    .arrow-pad {
+    /* CARD GUÍA ARTISTA (SUPERIOR IZQUIERDA) */
+    #artist-guide-card {
+      position: fixed;
+      top: 64px; left: 20px;
+      z-index: 10000;
+      background: rgba(24, 16, 40, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 14px;
+      padding: 10px 14px;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 10px;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
-    .arrow-row {
+    #artist-guide-icon {
+      width: 28px; height: 28px;
+      background: rgba(168, 85, 247, 0.2);
+      border-radius: 50%;
       display: flex;
-      gap: 5px;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #c084fc;
     }
-    .key-cap {
-      width: 34px;
-      height: 34px;
-      background: #252535;
-      border: 1px solid #404058;
-      border-bottom: 3px solid #161622;
+    #artist-guide-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    #artist-guide-sub {
+      font-size: 10px;
+      color: #a855f7;
+      font-weight: 400;
+    }
+
+    /* BOTÓN REPRODUCTOR YOUTUBE DIRECTO (SUPERIOR DERECHA) */
+    #direct-play-btn {
+      position: fixed;
+      top: 64px; right: 20px;
+      z-index: 10000;
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s;
+    }
+    #direct-play-btn:hover {
+      transform: scale(1.05);
+      border-color: #ef4444;
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+    #direct-play-icon {
+      width: 28px; height: 20px;
+      background: #ef4444;
       border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
-      font-weight: 600;
-      color: #f5f5fa;
-      cursor: pointer !important;
-      transition: all 0.1s ease;
-      touch-action: manipulation;
-    }
-    .key-cap:hover {
-      background: #3b3b54;
-      border-color: #6366f1;
-    }
-    .key-cap:active {
-      transform: translateY(2px);
-      border-bottom-width: 1px;
+      color: #fff;
+      font-size: 10px;
     }
 
-    .guide-item {
+    /* PANEL GUÍA DE NAVEGACIÓN (INFERIOR DERECHA) */
+    #nav-guide {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      z-index: 10000;
+      background: rgba(24, 16, 40, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-size: 11px;
-      text-align: center;
-      color: #dcdcfa;
-      gap: 5px;
+      gap: 10px;
+      width: 170px;
+      user-select: none;
+      transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease;
     }
 
-    .mouse-icon {
-      width: 22px;
-      height: 30px;
-      border: 2px solid #ffffff;
-      border-radius: 13px;
+    /* Estado minimizado del panel de navegación */
+    #nav-guide.minimized {
+      transform: translateX(calc(100% + 25px));
+      opacity: 0.95;
+    }
+
+    /* Botón estético para minimizar/desplegar el panel */
+    #btn-toggle-nav-guide {
+      position: absolute;
+      top: 50%;
+      left: -28px;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 48px;
+      background: linear-gradient(135deg, rgba(30, 20, 50, 0.95), rgba(20, 14, 35, 0.95));
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      border-right: none;
+      border-radius: 10px 0 0 10px;
+      color: #c084fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 11px;
+      box-shadow: -4px 4px 14px rgba(0, 0, 0, 0.5);
+      transition: all 0.25s ease;
+      z-index: 10001;
+      padding: 0;
+    }
+    #btn-toggle-nav-guide:hover {
+      background: rgba(168, 85, 247, 0.85);
+      color: #ffffff;
+      width: 29px;
+      left: -31px;
+    }
+
+    #nav-guide-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #c084fc;
+      width: 100%;
+      text-align: center;
+    }
+    #nav-dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 28px);
+      grid-template-rows: repeat(2, 28px);
+      gap: 4px;
+      justify-content: center;
+    }
+    .dpad-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: #e9d5ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .dpad-btn:active {
+      background: rgba(168, 85, 247, 0.4);
+      transform: scale(0.92);
+    }
+    #dpad-up { grid-column: 2; grid-row: 1; }
+    #dpad-left { grid-column: 1; grid-row: 2; }
+    #dpad-down { grid-column: 2; grid-row: 2; }
+    #dpad-right { grid-column: 3; grid-row: 2; }
+
+    #nav-guide-sub {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      line-height: 1.2;
+    }
+    #nav-divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(168, 85, 247, 0.2);
+    }
+    #nav-mouse-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    #mouse-icon {
+      width: 16px; height: 24px;
+      border: 1.5px solid #c084fc;
+      border-radius: 10px;
       position: relative;
     }
-    .mouse-icon::after {
+    #mouse-icon::after {
       content: '';
       position: absolute;
-      top: 5px;
-      left: 50%;
+      top: 4px; left: 50%;
       transform: translateX(-50%);
-      width: 2px;
-      height: 7px;
-      background: #ffffff;
+      width: 2px; height: 5px;
+      background: #c084fc;
       border-radius: 2px;
     }
-
-    /* BOTÓN DINÁMICO: SALIR A LA NEBULOSA / VOLVER A LA GALERÍA */
-    #btn-toggle-nebulosa {
-      width: 100%;
-      box-sizing: border-box;
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 10px;
-      padding: 9px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer !important;
-      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
-      transition: all 0.2s ease;
+    #nav-mouse-text {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.7);
       text-align: center;
-      touch-action: manipulation;
+      line-height: 1.2;
     }
-    #btn-toggle-nebulosa:hover {
-      transform: scale(1.03);
+
+    #btn-salir-nebulosa {
+      background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+      transition: all 0.2s;
+      width: 100%;
+      justify-content: center;
+      margin-top: 4px;
     }
-    #btn-toggle-nebulosa.afuera {
-      background: linear-gradient(135deg, #10b981, #059669);
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+    #btn-salir-nebulosa:hover {
+      background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+      transform: scale(1.02);
+    }
+
+    /* BOTÓN PANTALLA COMPLETA (INFERIOR DERECHA ABSOLUTO) */
+    #fullscreen-btn {
+      position: fixed;
+      bottom: 20px; right: 205px;
+      z-index: 10000;
+      background: rgba(24, 16, 40, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 8px;
+      width: 36px; height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      transition: all 0.2s;
+    }
+    #fullscreen-btn:hover {
+      background: rgba(168, 85, 247, 0.3);
+      transform: scale(1.05);
+    }
+
+    /* BOTONES DE AUDIO */
+    #audio-controls {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 100000;
+      display: flex;
+      gap: 10px;
+    }
+    .audio-btn {
+      background: rgba(24, 16, 40, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s;
+    }
+    .audio-btn:hover {
+      background: rgba(168, 85, 247, 0.4);
+      transform: scale(1.08);
+      border-color: rgba(168, 85, 247, 0.6);
+    }
+    .audio-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: #e9d5ff;
+    }
+
+    /* AJUSTES RESPONSIVOS PARA MÓVIL */
+    @media (max-width: 768px) {
+      #top-bar { padding: 0 12px; }
+      #artist-guide-card { top: 58px; left: 12px; padding: 6px 10px; }
+      #direct-play-btn { top: 58px; right: 12px; padding: 4px 10px; }
+      #direct-play-btn span { display: none; }
+      #nav-guide { bottom: 12px; right: 12px; width: 140px; padding: 10px; }
+      #fullscreen-btn { bottom: 12px; right: 160px; width: 32px; height: 32px; }
+      #audio-controls { bottom: 12px; left: 12px; }
+      .audio-btn { width: 38px; height: 38px; }
     }
   </style>
 
+  <!-- LÓGICA DE CONTROL, MODAL, TROFEOS Y NAVEGACIÓN -->
   <script>
+    // Variable global para controlar si el usuario está fuera en la nebulosa
+    window.enNebulosa = false;
+
+    // Función para alternar (minimizar / restaurar) el panel de navegación
+    function alternarNavGuide() {
+      const panel = document.getElementById('nav-guide');
+      const btn = document.getElementById('btn-toggle-nav-guide');
+      if (!panel || !btn) return;
+      panel.classList.toggle('minimized');
+      const estaMinimizado = panel.classList.contains('minimized');
+      btn.innerHTML = estaMinimizado ? '◀' : '▶';
+      btn.title = estaMinimizado ? 'Mostrar panel de navegación' : 'Minimizar panel';
+    }
+
+    // Funciones del Modal de Obras
     function abrirModalObra(titulo, desc, link) {
-      document.getElementById('artwork-modal-title').textContent = titulo || 'Obra';
-      document.getElementById('artwork-modal-desc').textContent = desc || 'Descripción disponible próximamente.';
-      const btnLink = document.getElementById('artwork-modal-link');
-      btnLink.href = link || 'https://galerianebulosa.com/obras-destacadas/';
-      btnLink.target = '_blank';
+      document.getElementById('artwork-modal-title').textContent = titulo || 'Obra Destacada';
+      document.getElementById('artwork-modal-desc').textContent = desc || 'Sin descripción disponible.';
+      const btn = document.getElementById('artwork-modal-btn');
+      if (link && link.trim() !== '') {
+        btn.href = link;
+        btn.style.display = 'inline-flex';
+      } else {
+        btn.style.display = 'none';
+      }
       document.getElementById('artwork-modal-overlay').style.display = 'flex';
     }
 
@@ -433,1289 +709,524 @@
       document.getElementById('artwork-modal-overlay').style.display = 'none';
     }
 
-    function abrirModalVideo(videoId) {
-      const iframe = document.getElementById('youtube-player-frame');
-      iframe.src = `https://www.youtube.com/embed/${videoId || '4HOu4_57T1U'}?autoplay=1&rel=0`;
+    // Función de colisión con los pedestales de los trofeos
+    function colisionaConTrofeos(x, z) {
+      if (window.enNebulosa) return false;
+
+      // Trofeo 1.er Lugar (Oro): centro (-9.04, -14.96)
+      if (x >= -10.15 && x <= -7.95 && z >= -16.05 && z <= -13.85) {
+        return true;
+      }
+
+      // Trofeo 2.º Lugar (Plata): centro (-0.75, -15.58)
+      if (x >= -1.75 && x <= 0.25 && z >= -16.65 && z <= -14.50) {
+        return true;
+      }
+
+      // Trofeo 3.er Lugar (Bronce): centro (-8.66, -23.78)
+      if (x >= -9.60 && x <= -7.70 && z >= -24.85 && z <= -22.70) {
+        return true;
+      }
+
+      return false;
+    }
+
+    // Funciones para la Nebulosa
+    function salirANebulosa() {
+      window.enNebulosa = true;
+      const overlay = document.getElementById('overlay-nebulosa');
+      const video = document.getElementById('video-nebulosa');
+      overlay.style.display = 'block';
+      if (video) {
+        video.currentTime = 0;
+        video.play().catch(e => console.log('Error video play:', e));
+      }
+    }
+
+    function volverAGaleria() {
+      window.enNebulosa = false;
+      const overlay = document.getElementById('overlay-nebulosa');
+      const video = document.getElementById('video-nebulosa');
+      if (video) video.pause();
+      overlay.style.display = 'none';
+
+      // Reposicionar al visitante dentro de la galería de manera segura
+      const rig = document.querySelector('#rig');
+      if (rig) {
+        rig.setAttribute('position', { x: -12.5, y: 2.05, z: -10.0 });
+        if (rig.components['colision-paredes']) {
+          rig.components['colision-paredes'].prev.set(-12.5, 2.05, -10.0);
+          rig.components['colision-paredes'].bueno.set(-12.5, 2.05, -10.0);
+        }
+      }
+    }
+
+    // Modal de YouTube
+    function abrirVideoYoutube(videoId) {
+      const container = document.getElementById('youtube-iframe-container');
+      container.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
       document.getElementById('video-modal-overlay').style.display = 'flex';
     }
 
-    function cerrarModalVideo() {
-      const iframe = document.getElementById('youtube-player-frame');
-      iframe.src = '';
+    function cerrarVideoYoutube() {
+      const container = document.getElementById('youtube-iframe-container');
+      container.innerHTML = '';
       document.getElementById('video-modal-overlay').style.display = 'none';
     }
 
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        cerrarModalVideo();
-        cerrarModalObra();
-        cerrarModalTrofeo();
-      }
-    });
+    // Modal Visor 3D Trofeos
+    let viewerScene, viewerCamera, viewerRenderer, viewerModel, viewerAnimationId;
+    let isDraggingViewer = false;
+    let prevMouseX = 0, prevMouseY = 0;
 
-    // MOVIMIENTO RELATIVO A HACIA DÓNDE MIRA LA CÁMARA
-    function moverConBoton(tecla) {
-      const cameraRig = document.querySelector('#rig');
-      const cameraEl = document.querySelector('a-camera');
-      if (cameraRig && cameraEl && cameraEl.object3D) {
-        const dir = new THREE.Vector3();
-        cameraEl.object3D.getWorldDirection(dir);
-        dir.y = 0;
-        dir.normalize();
+    function abrirVisorTrofeo(lugar) {
+      const modal = document.getElementById('trofeo-modal-overlay');
+      const title = document.getElementById('trofeo-modal-title');
+      const sub = document.getElementById('trofeo-modal-sub');
+      const container = document.getElementById('trofeo-canvas-container');
 
-        const paso = 0.8;
-        let dx = 0, dz = 0;
-
-        if (tecla === 'ArrowUp') {
-          dx = -dir.x * paso;
-          dz = -dir.z * paso;
-        } else if (tecla === 'ArrowDown') {
-          dx = dir.x * paso;
-          dz = dir.z * paso;
-        } else if (tecla === 'ArrowLeft') {
-          dx = -dir.z * paso;
-          dz = dir.x * paso;
-        } else if (tecla === 'ArrowRight') {
-          dx = dir.z * paso;
-          dz = -dir.x * paso;
-        }
-
-        const p = cameraRig.getAttribute('position');
-        cameraRig.setAttribute('position', { x: p.x + dx, y: p.y, z: p.z + dz });
-      }
-    }
-
-    // CONTROL INTELIGENTE DE ENTRADA Y SALIDA A LA NEBULOSA
-    let enLaNebulosa = false;
-    let ultimaPosicionGaleria = { x: -12.5, y: 2.05, z: -10.0 };
-
-    function alternarNebulosa() {
-      const cameraRig = document.querySelector('#rig');
-      const btn = document.getElementById('btn-toggle-nebulosa');
-      if (!cameraRig || !btn) return;
-
-      if (!enLaNebulosa) {
-        const posActual = cameraRig.getAttribute('position');
-        ultimaPosicionGaleria = { x: posActual.x, y: posActual.y, z: posActual.z };
-        cameraRig.setAttribute('position', { x: 0, y: 15.0, z: 22.0 });
-        enLaNebulosa = true;
-        btn.textContent = '🏛️ Volver a la Galería';
-        btn.classList.add('afuera');
+      let modelId = '';
+      if (lugar === 'gold') {
+        title.textContent = 'Trofeo de Primer Lugar';
+        title.style.background = 'linear-gradient(135deg, #ffd700 0%, #fff 100%)';
+        title.style.webkitBackgroundClip = 'text';
+        sub.textContent = 'Constelación de Creadores - Galardón Dorado';
+        modelId = 'trofeo-oro';
+      } else if (lugar === 'silver') {
+        title.textContent = 'Trofeo de Segundo Lugar';
+        title.style.background = 'linear-gradient(135deg, #e2e8f0 0%, #fff 100%)';
+        title.style.webkitBackgroundClip = 'text';
+        sub.textContent = 'Constelación de Creadores - Galardón Plateado';
+        modelId = 'trofeo-plata';
       } else {
-        cameraRig.setAttribute('position', ultimaPosicionGaleria);
-        enLaNebulosa = false;
-        btn.textContent = '🌌 Salir a la Nebulosa';
-        btn.classList.remove('afuera');
+        title.textContent = 'Trofeo de Tercer Lugar';
+        title.style.background = 'linear-gradient(135deg, #f97316 0%, #ffedd5 100%)';
+        title.style.webkitBackgroundClip = 'text';
+        sub.textContent = 'Constelación de Creadores - Galardón Bronce';
+        modelId = 'trofeo-bronce';
+      }
+
+      modal.style.display = 'flex';
+      initViewerThree(container, modelId);
+    }
+
+    function cerrarVisorTrofeo() {
+      document.getElementById('trofeo-modal-overlay').style.display = 'none';
+      if (viewerAnimationId) cancelAnimationFrame(viewerAnimationId);
+      const container = document.getElementById('trofeo-canvas-container');
+      const canvas = container.querySelector('canvas');
+      if (canvas && viewerRenderer) {
+        viewerRenderer.dispose();
+        container.removeChild(canvas);
       }
     }
 
-    // =========================================================================
-    // DELIMITADOR PERIMETRAL DE SEGURIDAD (evita salir de la galería en cualquier circunstancia)
-    // =========================================================================
-    function esDentroDeLaGaleria(x, z) {
-      // Zona 1: Sala de los Trofeos (Obras 1 a 9)
-      const enTrofeos = (x >= -10.1 && x <= 0.2 && z >= -25.2 && z <= -14.5);
-      // Zona 2: Pasillo Principal completo (de TV exterior a -19.7 hasta el fondo a +19.8)
-      const enPasillo = (x >= -20.1 && x <= 20.1 && z >= -15.2 && z <= -4.8);
-      // Zona 3: Ala derecha y corredores en L (Obras 10 a 48)
-      const enAlaDerecha = (x >= -0.2 && x <= 20.1 && z >= -5.2 && z <= 25.2);
-      return (enTrofeos || enPasillo || enAlaDerecha);
-    }
+    function initViewerThree(container, modelAssetId) {
+      const oldCanvas = container.querySelector('canvas');
+      if (oldCanvas) container.removeChild(oldCanvas);
 
-    // =========================================================================
-    // COLISIÓN CON LAS PAREDES (el jugador no puede salir de la galería)
-    // =========================================================================
-    // ==CORE-START==
-    // -----------------------------------------------------------------------
-    // MAPA DE COLISIÓN (no depende de nombres de objetos ni de raycasting)
-    //  - Lee TODOS los triángulos del modelo de la sala en coordenadas del mundo.
-    //  - PISO: detecta el nivel del suelo y marca por dónde se puede caminar.
-    //  - MUROS: corta la geometría a varias alturas del cuerpo y marca todo lo sólido.
-    //  - Solo se puede estar donde hay piso, no hay nada sólido y se conecta con el
-    //    punto de inicio. Así es imposible "salirse" aunque cambie el modelo.
-    // -----------------------------------------------------------------------
-    function crearMapaColision(tris, opt) {
-      opt = opt || {};
-      var ojoY = opt.ojoY != null ? opt.ojoY : 2.05;
-      var ini = opt.inicio || { x: 0, z: 0 };
-      var n = Math.floor(tris.length / 9);
-      var info = { triangulos: n };
-      if (n === 0) return { activo: false, motivo: 'el modelo no tiene geometría', info: info };
+      const width = container.clientWidth;
+      const height = container.clientHeight;
 
-      var i, j, o;
+      viewerScene = new THREE.Scene();
+      viewerCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+      viewerCamera.position.set(0, 0.8, 2.5);
 
-      // ---- 1) Nivel del piso: la superficie horizontal que hay justo bajo el punto de inicio
-      var hist = {};
-      var yTope = ojoY - 0.6;
-      var bajoPies = -Infinity;
-      var ax, ay, az, bx, by, bz, cx, cy, cz, ux, uy, uz, vx, vy, vz, nx, ny, nz, len, cosY;
-      for (i = 0; i < n; i++) {
-        o = i * 9;
-        ax = tris[o]; ay = tris[o + 1]; az = tris[o + 2];
-        bx = tris[o + 3]; by = tris[o + 4]; bz = tris[o + 5];
-        cx = tris[o + 6]; cy = tris[o + 7]; cz = tris[o + 8];
-        ux = bx - ax; uy = by - ay; uz = bz - az;
-        vx = cx - ax; vy = cy - ay; vz = cz - az;
-        nx = uy * vz - uz * vy; ny = uz * vx - ux * vz; nz = ux * vy - uy * vx;
-        len = Math.sqrt(nx * nx + ny * ny + nz * nz);
-        if (len < 1e-9) continue;
-        if (Math.abs(ny) / len > 0.95) {
-          var yy = (ay + by + cy) / 3;
-          if (yy < yTope) {
-            var kb = Math.round(yy / 0.05);
-            hist[kb] = (hist[kb] || 0) + len / 2;
-            if (yy > bajoPies) {
-              var dd = (bz - cz) * (ax - cx) + (cx - bx) * (az - cz);
-              if (Math.abs(dd) > 1e-12) {
-                var q1 = ((bz - cz) * (ini.x - cx) + (cx - bx) * (ini.z - cz)) / dd;
-                var q2 = ((cz - az) * (ini.x - cx) + (ax - cx) * (ini.z - cz)) / dd;
-                if (q1 >= -1e-9 && q2 >= -1e-9 && 1 - q1 - q2 >= -1e-9) bajoPies = yy;
-              }
-            }
-          }
+      viewerRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      viewerRenderer.setSize(width, height);
+      viewerRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      viewerRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+      container.appendChild(viewerRenderer.domElement);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+      viewerScene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xfff5e6, 2.2);
+      dirLight.position.set(2, 4, 3);
+      viewerScene.add(dirLight);
+
+      const dirLight2 = new THREE.DirectionalLight(0xa855f7, 1.5);
+      dirLight2.position.set(-2, -2, -2);
+      viewerScene.add(dirLight2);
+
+      const assetEl = document.getElementById(modelAssetId);
+      if (assetEl) {
+        const src = assetEl.getAttribute('src');
+        const loader = new THREE.GLTFLoader();
+        loader.load(src, function(gltf) {
+          viewerModel = gltf.scene;
+          const box = new THREE.Box3().setFromObject(viewerModel);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = 1.4 / maxDim;
+          viewerModel.scale.set(scale, scale, scale);
+          viewerModel.position.set(-center.x * scale, -center.y * scale + 0.1, -center.z * scale);
+          viewerScene.add(viewerModel);
+        });
+      }
+
+      function animate() {
+        viewerAnimationId = requestAnimationFrame(animate);
+        if (viewerModel && !isDraggingViewer) {
+          viewerModel.rotation.y += 0.008;
         }
+        viewerRenderer.render(viewerScene, viewerCamera);
       }
-      var pisoY = ojoY - 1.7, pisoDetectado = false;
-      if (bajoPies > -Infinity) {
-        pisoY = bajoPies;
-        pisoDetectado = true;
+      animate();
+
+      container.onmousedown = (e) => {
+        isDraggingViewer = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      };
+      window.onmouseup = () => { isDraggingViewer = false; };
+      window.onmousemove = (e) => {
+        if (!isDraggingViewer || !viewerModel) return;
+        const deltaX = e.clientX - prevMouseX;
+        const deltaY = e.clientY - prevMouseY;
+        viewerModel.rotation.y += deltaX * 0.01;
+        viewerModel.rotation.x += deltaY * 0.01;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      };
+
+      container.ontouchstart = (e) => {
+        if (e.touches.length === 1) {
+          isDraggingViewer = true;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+        }
+      };
+      window.ontouchend = () => { isDraggingViewer = false; };
+      window.ontouchmove = (e) => {
+        if (!isDraggingViewer || !viewerModel || e.touches.length !== 1) return;
+        const deltaX = e.touches[0].clientX - prevMouseX;
+        const deltaY = e.touches[0].clientY - prevMouseY;
+        viewerModel.rotation.y += deltaX * 0.015;
+        viewerModel.rotation.x += deltaY * 0.015;
+        prevMouseX = e.touches[0].clientX;
+        prevMouseY = e.touches[0].clientY;
+      };
+    }
+
+    // Funciones del Sistema de Audio
+    let audioMusica = null;
+    let audioVoz = null;
+
+    function toggleMusica() {
+      if (!audioMusica) audioMusica = document.getElementById('audio-musica');
+      const btn = document.getElementById('btn-audio-musica');
+      if (audioMusica.paused) {
+        audioMusica.play().then(() => {
+          btn.style.borderColor = '#10b981';
+          btn.querySelector('svg').style.fill = '#10b981';
+        }).catch(e => console.log('Audio err:', e));
       } else {
-        var mejor = 0, claves = Object.keys(hist), puntajes = {}, kk;
-        for (i = 0; i < claves.length; i++) {
-          kk = parseInt(claves[i], 10);
-          puntajes[kk] = (hist[kk - 1] || 0) + (hist[kk] || 0) + (hist[kk + 1] || 0);
-          if (puntajes[kk] > mejor) mejor = puntajes[kk];
-        }
-        if (mejor > 0) {
-          var yElegida = -Infinity;
-          for (i = 0; i < claves.length; i++) {
-            kk = parseInt(claves[i], 10);
-            if (puntajes[kk] >= mejor * 0.85 && kk * 0.05 > yElegida) yElegida = kk * 0.05;
-          }
-          pisoY = yElegida;
-          pisoDetectado = true;
-        }
+        audioMusica.pause();
+        btn.style.borderColor = 'rgba(168, 85, 247, 0.3)';
+        btn.querySelector('svg').style.fill = '#e9d5ff';
       }
-      info.pisoY = Math.round(pisoY * 100) / 100;
-
-      // ---- Rejilla 2D: solo con la geometría que está a la altura del cuerpo
-      var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-      var yBajo = pisoY - 0.2, yAlto = pisoY + 2.2;
-      for (i = 0; i < n; i++) {
-        o = i * 9;
-        ay = tris[o + 1]; by = tris[o + 4]; cy = tris[o + 7];
-        if (Math.max(ay, by, cy) < yBajo || Math.min(ay, by, cy) > yAlto) continue;
-        for (j = 0; j < 9; j += 3) {
-          var px = tris[o + j], pz = tris[o + j + 2];
-          if (px < minX) minX = px;
-          if (px > maxX) maxX = px;
-          if (pz < minZ) minZ = pz;
-          if (pz > maxZ) maxZ = pz;
-        }
-      }
-      if (!(maxX > minX) || !(maxZ > minZ)) return { activo: false, motivo: 'no hay geometría a la altura del cuerpo', info: info };
-      minX -= 1; minZ -= 1; maxX += 1; maxZ += 1;
-      var CELDA = 0.1;
-      while (Math.ceil((maxX - minX) / CELDA) * Math.ceil((maxZ - minZ) / CELDA) > 4e6) CELDA *= 1.5;
-      var PASO = CELDA / 2;
-      var W = Math.ceil((maxX - minX) / CELDA) + 1;
-      var H = Math.ceil((maxZ - minZ) / CELDA) + 1;
-      var piso = new Uint8Array(W * H);
-      var muro = new Uint8Array(W * H);
-      info.celdaM = Math.round(CELDA * 100) / 100;
-
-      // ---- 2) Muros: cortes horizontales a varias alturas del cuerpo
-      var alturas = [0.35, 0.8, 1.25, 1.7];
-      var s, hh, pts, t, ix, iz, steps, sx, sz, L;
-      var marcarSegmento = function (x1, z1, x2, z2) {
-        L = Math.sqrt((x2 - x1) * (x2 - x1) + (z2 - z1) * (z2 - z1));
-        steps = Math.max(1, Math.ceil(L / PASO));
-        for (j = 0; j <= steps; j++) {
-          sx = x1 + (x2 - x1) * (j / steps);
-          sz = z1 + (z2 - z1) * (j / steps);
-          ix = Math.floor((sx - minX) / CELDA);
-          iz = Math.floor((sz - minZ) / CELDA);
-          if (ix >= 0 && iz >= 0 && ix < W && iz < H) muro[iz * W + ix] = 1;
-        }
-      };
-      var nMuros = 0, nPiso = 0;
-      for (i = 0; i < n; i++) {
-        o = i * 9;
-        ax = tris[o]; ay = tris[o + 1]; az = tris[o + 2];
-        bx = tris[o + 3]; by = tris[o + 4]; bz = tris[o + 5];
-        cx = tris[o + 6]; cy = tris[o + 7]; cz = tris[o + 8];
-        ux = bx - ax; uy = by - ay; uz = bz - az;
-        vx = cx - ax; vy = cy - ay; vz = cz - az;
-        nx = uy * vz - uz * vy; ny = uz * vx - ux * vz; nz = ux * vy - uy * vx;
-        len = Math.sqrt(nx * nx + ny * ny + nz * nz);
-        if (len < 1e-9) continue;
-        cosY = Math.abs(ny) / len;
-
-        if (cosY < 0.9) {
-          var yMin = Math.min(ay, by, cy), yMax = Math.max(ay, by, cy);
-          var contado = false;
-          for (s = 0; s < alturas.length; s++) {
-            hh = pisoY + alturas[s];
-            if (hh < yMin || hh > yMax) continue;
-            pts = [];
-            if ((ay > hh) !== (by > hh)) { t = (hh - ay) / (by - ay); pts.push(ax + t * (bx - ax), az + t * (bz - az)); }
-            if ((by > hh) !== (cy > hh)) { t = (hh - by) / (cy - by); pts.push(bx + t * (cx - bx), bz + t * (cz - bz)); }
-            if ((cy > hh) !== (ay > hh)) { t = (hh - cy) / (ay - cy); pts.push(cx + t * (ax - cx), cz + t * (az - cz)); }
-            if (pts.length >= 4) { marcarSegmento(pts[0], pts[1], pts[2], pts[3]); contado = true; }
-          }
-          if (contado) nMuros++;
-        } else if (cosY > 0.95) {
-          // ---- 3) Piso: triángulos horizontales a la altura del suelo
-          var ym = (ay + by + cy) / 3;
-          if (Math.abs(ym - pisoY) < 0.12) {
-            var x0 = Math.min(ax, bx, cx), x1 = Math.max(ax, bx, cx);
-            var z0 = Math.min(az, bz, cz), z1 = Math.max(az, bz, cz);
-            var i0 = Math.max(0, Math.floor((x0 - minX) / CELDA)), i1 = Math.min(W - 1, Math.floor((x1 - minX) / CELDA));
-            var k0 = Math.max(0, Math.floor((z0 - minZ) / CELDA)), k1 = Math.min(H - 1, Math.floor((z1 - minZ) / CELDA));
-            var det = (bz - cz) * (ax - cx) + (cx - bx) * (az - cz);
-            var marcado = false;
-            if (Math.abs(det) > 1e-12) {
-              for (var kz = k0; kz <= k1; kz++) {
-                var pz2 = minZ + (kz + 0.5) * CELDA;
-                for (var kx = i0; kx <= i1; kx++) {
-                  var px2 = minX + (kx + 0.5) * CELDA;
-                  var l1 = ((bz - cz) * (px2 - cx) + (cx - bx) * (pz2 - cz)) / det;
-                  var l2 = ((cz - az) * (px2 - cx) + (ax - cx) * (pz2 - cz)) / det;
-                  var l3 = 1 - l1 - l2;
-                  if (l1 >= -1e-9 && l2 >= -1e-9 && l3 >= -1e-9) { piso[kz * W + kx] = 1; marcado = true; }
-                }
-              }
-            }
-            if (!marcado) {
-              ix = Math.floor(((ax + bx + cx) / 3 - minX) / CELDA);
-              iz = Math.floor(((az + bz + cz) / 3 - minZ) / CELDA);
-              if (ix >= 0 && iz >= 0 && ix < W && iz < H) piso[iz * W + ix] = 1;
-            }
-            nPiso++;
-          }
-        }
-      }
-      var celdasPiso = 0, celdasMuro = 0;
-      for (i = 0; i < piso.length; i++) { celdasPiso += piso[i]; celdasMuro += muro[i]; }
-      info.celdasPiso = celdasPiso;
-      info.celdasMuro = celdasMuro;
-      info.trianguloMuros = nMuros;
-      info.trianguloPiso = nPiso;
-      info.pisoDetectado = pisoDetectado && celdasPiso >= 400;
-
-      // ---- 4) Elegir la configuración más estricta que deje caminar desde el inicio
-      var offsCache = {};
-      var offsets = function (r) {
-        var key = r.toFixed(3);
-        if (offsCache[key]) return offsCache[key];
-        var R = Math.ceil(r / CELDA), lista = [], a, b;
-        for (b = -R; b <= R; b++) for (a = -R; a <= R; a++) {
-          if ((a * CELDA) * (a * CELDA) + (b * CELDA) * (b * CELDA) <= r * r) lista.push(a, b);
-        }
-        offsCache[key] = lista;
-        return lista;
-      };
-      var cfg = { piso: true, muro: true, offs: offsets(0.45), alc: null };
-      var libreCelda = function (ix2, iz2) {
-        if (ix2 < 0 || iz2 < 0 || ix2 >= W || iz2 >= H) return false;
-        var k = iz2 * W + ix2;
-        if (cfg.muro && muro[k]) return false;
-        if (cfg.piso && !piso[k]) return false;
-        return true;
-      };
-      var cuerpoLibre = function (ix2, iz2) {
-        var of = cfg.offs;
-        for (var q = 0; q < of.length; q += 2) if (!libreCelda(ix2 + of[q], iz2 + of[q + 1])) return false;
-        return true;
-      };
-      var sx0 = Math.floor((ini.x - minX) / CELDA), sz0 = Math.floor((ini.z - minZ) / CELDA);
-      var cola = new Int32Array(W * H);
-      var inundar = function () {
-        var vis = new Uint8Array(W * H), cabeza = 0, cola2 = 0, cuenta = 0, toca = false;
-        if (!cuerpoLibre(sx0, sz0)) return { vis: vis, cuenta: 0, toca: false };
-        vis[sz0 * W + sx0] = 1; cola[cola2++] = sz0 * W + sx0;
-        while (cabeza < cola2) {
-          var c = cola[cabeza++], cxi = c % W, czi = (c - cxi) / W;
-          cuenta++;
-          if (cxi <= 1 || czi <= 1 || cxi >= W - 2 || czi >= H - 2) toca = true;
-          var vec = [cxi + 1, czi, cxi - 1, czi, cxi, czi + 1, cxi, czi - 1];
-          for (var d = 0; d < 8; d += 2) {
-            var nxi = vec[d], nzi = vec[d + 1];
-            if (nxi < 0 || nzi < 0 || nxi >= W || nzi >= H) continue;
-            var kn = nzi * W + nxi;
-            if (vis[kn]) continue;
-            if (!cuerpoLibre(nxi, nzi)) continue;
-            vis[kn] = 1; cola[cola2++] = kn;
-          }
-        }
-        return { vis: vis, cuenta: cuenta, toca: toca };
-      };
-
-      var combos = [];
-      if (info.pisoDetectado) combos.push({ piso: true, muro: true });
-      if (info.pisoDetectado) combos.push({ piso: true, muro: false });
-      combos.push({ piso: false, muro: true });
-      var radios = [0.45, 0.35, 0.25, 0.15];
-      var elegido = null;
-      for (var ci = 0; ci < combos.length && !elegido; ci++) {
-        for (var ri = 0; ri < radios.length && !elegido; ri++) {
-          cfg.piso = combos[ci].piso; cfg.muro = combos[ci].muro; cfg.offs = offsets(radios[ri]);
-          var res = inundar();
-          if (res.cuenta * CELDA * CELDA >= 15) {
-            elegido = { piso: cfg.piso, muro: cfg.muro, radio: radios[ri], res: res };
-          }
-        }
-      }
-      if (!elegido) {
-        return { activo: false, motivo: 'no se pudo ubicar una zona caminable desde el punto de inicio', info: info };
-      }
-      cfg.piso = elegido.piso; cfg.muro = elegido.muro; cfg.offs = offsets(elegido.radio);
-      cfg.alc = elegido.res.vis;
-      info.usaPiso = elegido.piso;
-      info.usaMuros = elegido.muro;
-      info.radio = elegido.radio;
-      info.areaCaminable = Math.round(elegido.res.cuenta * CELDA * CELDA);
-      info.zonaAbierta = elegido.res.toca;
-
-      var permitido = function (x, z) {
-        // Barrera perimetral infranqueable
-        if (!esDentroDeLaGaleria(x, z)) return false;
-        var ix2 = Math.floor((x - minX) / CELDA), iz2 = Math.floor((z - minZ) / CELDA);
-        if (ix2 < 0 || iz2 < 0 || ix2 >= W || iz2 >= H) return false;
-        return cfg.alc[iz2 * W + ix2] === 1;
-      };
-
-      // Mueve de (x0,z0) a (x1,z1) en pasitos; si choca, se desliza por la pared
-      var mover = function (x0, z0, x1, z1) {
-        var dx = x1 - x0, dz = z1 - z0;
-        var dist = Math.sqrt(dx * dx + dz * dz);
-        var pasos = Math.max(1, Math.ceil(dist / (CELDA * 0.8)));
-        var sdx = dx / pasos, sdz = dz / pasos;
-        var x = x0, z = z0, choco = false;
-        for (var p = 0; p < pasos; p++) {
-          if (permitido(x + sdx, z + sdz)) { x += sdx; z += sdz; }
-          else if (sdx !== 0 && permitido(x + sdx, z)) { x += sdx; choco = true; }
-          else if (sdz !== 0 && permitido(x, z + sdz)) { z += sdz; choco = true; }
-          else { choco = true; }
-        }
-        return { x: x, z: z, choco: choco };
-      };
-
-      return { activo: true, permitido: permitido, mover: mover, info: info };
     }
-    // ==CORE-END==
 
-    // SYSTEM: Se ejecuta en cada fotograma DESPUÉS de todos los components (incluyendo movement-controls)
-    // y ANTES de que Three.js renderice el cuadro en la pantalla.
-    AFRAME.registerSystem('colision-paredes', {
-      init: function () {
-        this.comp = null;
-      },
-      tick: function () {
-        if (this.comp) {
-          this.comp.corregir();
-        }
-      }
-    });
-
-    AFRAME.registerComponent('colision-paredes', {
-      init: function () {
-        this.system.comp = this;
-        const p = this.el.object3D.position;
-        this.mapa = null;
-        this.listo = false;
-        this.inicio = { x: p.x, z: p.z };
-        this.prev = new THREE.Vector3().copy(p);
-        this.bueno = new THREE.Vector3().copy(p);
-        this.cuadros = 0;
-        window.colisionEstado = 'esperando el modelo de la sala';
-
-        // Asegurar que la cámara hija no mueva su posición relativa con WASD
-        this.camEl = this.el.querySelector('a-camera') || this.el.querySelector('[camera]');
-        if (this.camEl) {
-          this.camEl.setAttribute('wasd-controls', 'enabled: false');
-        }
-      },
-
-      remove: function () {
-        if (this.system.comp === this) {
-          this.system.comp = null;
-        }
-      },
-
-      // Lee todos los triángulos del modelo de la sala (en coordenadas del mundo)
-      construir: function () {
-        const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
-        if (!roomEl) return false;
-        const raiz = roomEl.getObject3D('mesh');
-        if (!raiz) return false;
-
-        try {
-          raiz.updateMatrixWorld(true);
-          let total = 0;
-          const mallas = [];
-          raiz.traverse((nodo) => {
-            if (nodo.isMesh && nodo.visible !== false && nodo.geometry && nodo.geometry.attributes && nodo.geometry.attributes.position) {
-              mallas.push(nodo);
-              const g = nodo.geometry;
-              total += Math.floor((g.index ? g.index.count : g.attributes.position.count) / 3);
-            }
-          });
-
-          const tris = new Float32Array(total * 9);
-          const v = new THREE.Vector3();
-          let o = 0;
-          mallas.forEach((nodo) => {
-            const g = nodo.geometry, pos = g.attributes.position, idx = g.index, m = nodo.matrixWorld;
-            const cuenta = Math.floor((idx ? idx.count : pos.count) / 3) * 3;
-            for (let t = 0; t < cuenta; t++) {
-              const vi = idx ? idx.getX(t) : t;
-              v.fromBufferAttribute(pos, vi).applyMatrix4(m);
-              tris[o++] = v.x; tris[o++] = v.y; tris[o++] = v.z;
-            }
-          });
-
-          const ojoY = this.el.object3D.position.y || 2.05;
-          this.mapa = crearMapaColision(tris, { ojoY: ojoY, inicio: this.inicio });
-        } catch (err) {
-          console.warn('[Colisión] error al preparar las paredes:', err);
-          this.mapa = { activo: false, motivo: String(err) };
-        }
-
-        this.listo = true;
-        if (this.mapa.activo) {
-          window.colisionEstado = 'activa';
-          window.colisionInfo = this.mapa.info;
-          console.info('[Colisión] activa', this.mapa.info);
-        } else {
-          window.colisionEstado = 'desactivada: ' + this.mapa.motivo;
-          console.warn('[Colisión] desactivada:', this.mapa.motivo, this.mapa.info || '');
-        }
-        return true;
-      },
-
-      // Frena en las paredes antes del renderizado
-      corregir: function () {
-        const p = this.el.object3D.position;
-
-        // Mantener la cámara interna fija en (0,0,0) del rig
-        if (this.camEl && this.camEl.object3D) {
-          this.camEl.object3D.position.set(0, 0, 0);
-        }
-
-        // En el mirador exterior de la nebulosa no hay muros que restrinjan
-        if (enLaNebulosa) {
-          this.prev.copy(p);
-          return;
-        }
-
-        // Si el modelo aún no termina de cargar, aplicar bloqueo perimetral de inmediato
-        if (!this.listo) {
-          this.construir();
-          if (!this.listo) {
-            p.y = 2.05;
-            if (!esDentroDeLaGaleria(p.x, this.prev.z)) p.x = this.prev.x;
-            if (!esDentroDeLaGaleria(p.x, p.z)) p.z = this.prev.z;
-            if (!esDentroDeLaGaleria(p.x, p.z)) { p.x = this.bueno.x; p.z = this.bueno.z; }
-            else { this.bueno.set(p.x, p.y, p.z); }
-            this.prev.copy(p);
-            return;
-          }
-        }
-
-        p.y = 2.05;
-
-        const dx = p.x - this.prev.x;
-        const dz = p.z - this.prev.z;
-        if (Math.abs(dx) < 0.000001 && Math.abs(dz) < 0.000001) return;
-
-        // Reubicación / Teletransporte (ej. al volver de la nebulosa)
-        if (Math.sqrt(dx * dx + dz * dz) > 3.0) {
-          if (this.mapa && this.mapa.activo && this.mapa.permitido(p.x, p.z)) {
-            this.bueno.set(p.x, p.y, p.z);
-          } else if (esDentroDeLaGaleria(p.x, p.z)) {
-            this.bueno.set(p.x, p.y, p.z);
-          } else {
-            p.x = this.bueno.x;
-            p.z = this.bueno.z;
-          }
-          this.prev.copy(p);
-          return;
-        }
-
-        // Avance normal por teclado (WASD/flechas) o botones en pantalla
-        if (this.mapa && this.mapa.activo) {
-          const r = this.mapa.mover(this.prev.x, this.prev.z, p.x, p.z);
-          p.x = r.x;
-          p.z = r.z;
-
-          if (this.mapa.permitido(p.x, p.z)) {
-            this.bueno.set(p.x, p.y, p.z);
-          } else {
-            p.x = this.bueno.x;
-            p.z = this.bueno.z;
-          }
-        } else {
-          // Bloqueo perimetral fallback
-          if (!esDentroDeLaGaleria(p.x, this.prev.z)) p.x = this.prev.x;
-          if (!esDentroDeLaGaleria(p.x, p.z)) p.z = this.prev.z;
-          if (!esDentroDeLaGaleria(p.x, p.z)) { p.x = this.bueno.x; p.z = this.bueno.z; }
-          else { this.bueno.set(p.x, p.y, p.z); }
-        }
-
-        this.prev.copy(p);
-      },
-
-      tick: function () {
-        this.corregir();
-      }
-    });
-
-    // =========================================================================
-    // VISOR 3D FLOTANTE DE PREMIACIÓN (CLONA DIRECTO EL MODELO DE LA SALA)
-    // =========================================================================
-    let tScene, tCamera, tRenderer, tCurrentModel, tAnimId, tStageGroup;
-    let tIsDragging = false, tPrevX = 0;
-
-    const DATOS_PREMIACION = {
-      gold: {
-        entityId: 'trofeo-primer-lugar',
-        badge: '★ PRIMER LUGAR (ORO)',
-        badgeStyle: 'background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);',
-        artista: 'Nombre del Artista',
-        desc: 'Máximo galardón de la muestra trimestral Constelación de Creadores. Reconocimiento de honor a la excelencia artística, técnica y concepto plástico.'
-      },
-      silver: {
-        entityId: 'trofeo-segundo-lugar',
-        badge: '★ SEGUNDO LUGAR (PLATA)',
-        badgeStyle: 'background: rgba(226, 232, 240, 0.2); color: #f1f5f9; border: 1px solid rgba(226, 232, 240, 0.4);',
-        artista: 'Nombre del Artista',
-        desc: 'Distinción de plata de la muestra trimestral por su destacada propuesta artística, sensibilidad cromática y ejecución técnica.'
-      },
-      bronze: {
-        entityId: 'trofeo-tercer-lugar',
-        badge: '★ TERCER LUGAR (BRONCE)',
-        badgeStyle: 'background: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.4);',
-        artista: 'Nombre del Artista',
-        desc: 'Galardón de bronce de la muestra trimestral en reconocimiento a la originalidad creativa y valiosa participación.'
-      }
-    };
-
-    function abrirModalTrofeo(lugar) {
-      const data = DATOS_PREMIACION[lugar] || DATOS_PREMIACION.gold;
-
-      const badge = document.getElementById('trofeo-viewer-badge');
-      badge.textContent = data.badge;
-      badge.style = data.badgeStyle;
-      document.getElementById('trofeo-viewer-artist').textContent = data.artista;
-      document.getElementById('trofeo-viewer-desc').textContent = data.desc;
-
-      const overlay = document.getElementById('trofeo-viewer-overlay');
-      overlay.style.display = 'flex';
-
-      const bgVideo = document.getElementById('trofeo-bg-video');
-      if (bgVideo) {
-        bgVideo.currentTime = 0;
-        bgVideo.play().catch(() => {});
-      }
-
-      const wrap = document.getElementById('trofeo-viewer-canvas-wrap');
-      if (!tRenderer) {
-        initThreeTrofeo(wrap);
+    function toggleVoz() {
+      if (!audioVoz) audioVoz = document.getElementById('audio-voz');
+      const btn = document.getElementById('btn-audio-voz');
+      if (audioVoz.paused) {
+        audioVoz.play().then(() => {
+          btn.style.borderColor = '#3b82f6';
+          btn.querySelector('svg').style.fill = '#3b82f6';
+        }).catch(e => console.log('Voz err:', e));
       } else {
-        setTimeout(() => {
-          tRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
-          tCamera.aspect = wrap.clientWidth / wrap.clientHeight;
-          tCamera.updateProjectionMatrix();
-        }, 50);
+        audioVoz.pause();
+        btn.style.borderColor = 'rgba(168, 85, 247, 0.3)';
+        btn.querySelector('svg').style.fill = '#e9d5ff';
       }
-
-      mostrarModeloEnVisor(data.entityId);
     }
 
-    function cerrarModalTrofeo() {
-      document.getElementById('trofeo-viewer-overlay').style.display = 'none';
-      if (tAnimId) cancelAnimationFrame(tAnimId);
-      const bgVideo = document.getElementById('trofeo-bg-video');
-      if (bgVideo) bgVideo.pause();
-    }
-
-    function initThreeTrofeo(wrap) {
-      tScene = new THREE.Scene();
-      
-      tCamera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 50);
-      tCamera.position.set(0, 0.45, 3.8);
-      tCamera.lookAt(0, 0.25, 0);
-
-      tRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-      tRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
-      tRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      tRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-      tRenderer.toneMappingExposure = 1.0;
-      wrap.appendChild(tRenderer.domElement);
-
-      const amb = new THREE.AmbientLight(0xffffff, 1.25);
-      tScene.add(amb);
-      const dir1 = new THREE.DirectionalLight(0xffeedd, 2.2);
-      dir1.position.set(3, 5, 4);
-      tScene.add(dir1);
-      const rim = new THREE.DirectionalLight(0xa855f7, 2.5);
-      rim.position.set(-4, 3, -3);
-      tScene.add(rim);
-
-      // Pedestal circular estático
-      tStageGroup = new THREE.Group();
-      
-      const stageGeo = new THREE.CylinderGeometry(1.5, 1.7, 0.22, 48);
-      const stageMat = new THREE.MeshStandardMaterial({
-        color: 0x1f1136,
-        roughness: 0.35,
-        metalness: 0.8
-      });
-      const stageMesh = new THREE.Mesh(stageGeo, stageMat);
-      stageMesh.position.y = -0.95;
-      tStageGroup.add(stageMesh);
-
-      const ringGeo = new THREE.RingGeometry(1.05, 1.48, 48);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: 0xc084fc,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.55
-      });
-      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-      ringMesh.rotation.x = -Math.PI / 2;
-      ringMesh.position.y = -0.835;
-      tStageGroup.add(ringMesh);
-
-      tScene.add(tStageGroup);
-
-      wrap.addEventListener('mousedown', (e) => { tIsDragging = true; tPrevX = e.clientX; });
-      window.addEventListener('mouseup', () => { tIsDragging = false; });
-      wrap.addEventListener('mousemove', (e) => {
-        if (tIsDragging && tCurrentModel) {
-          tCurrentModel.rotation.y += (e.clientX - tPrevX) * 0.012;
-          tPrevX = e.clientX;
+    function togglePantallaCompleta() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.log(`Error al activar pantalla completa: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
         }
-      });
-      wrap.addEventListener('touchstart', (e) => { tIsDragging = true; tPrevX = e.touches[0].clientX; }, { passive: true });
-      window.addEventListener('touchend', () => { tIsDragging = false; });
-      wrap.addEventListener('touchmove', (e) => {
-        if (tIsDragging && tCurrentModel) {
-          tCurrentModel.rotation.y += (e.touches[0].clientX - tPrevX) * 0.012;
-          tPrevX = e.touches[0].clientX;
-        }
-      }, { passive: true });
-
-      window.addEventListener('resize', () => {
-        if (wrap.clientWidth > 0 && tRenderer) {
-          tCamera.aspect = wrap.clientWidth / wrap.clientHeight;
-          tCamera.updateProjectionMatrix();
-          tRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
-        }
-      });
-    }
-
-    function mostrarModeloEnVisor(entityId) {
-      if (tCurrentModel) {
-        tScene.remove(tCurrentModel);
-        tCurrentModel = null;
-      }
-
-      const aframeEntity = document.getElementById(entityId);
-      if (!aframeEntity) return;
-
-      const mesh = aframeEntity.getObject3D('mesh');
-      if (mesh) {
-        tCurrentModel = mesh.clone(true);
-
-        const box = new THREE.Box3().setFromObject(tCurrentModel);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 2.15 / maxDim;
-        tCurrentModel.scale.set(scale, scale, scale);
-
-        const newBox = new THREE.Box3().setFromObject(tCurrentModel);
-        tCurrentModel.position.x = -center.x * scale;
-        tCurrentModel.position.y = -0.835 - (newBox.min.y);
-        tCurrentModel.position.z = -center.z * scale;
-
-        tScene.add(tCurrentModel);
-        animarVisorTrofeo();
       }
     }
+  </script>
 
-    function animarVisorTrofeo() {
-      tAnimId = requestAnimationFrame(animarVisorTrofeo);
-      if (tCurrentModel && !tIsDragging) {
-        tCurrentModel.rotation.y += 0.008; // Solo el trofeo gira
-      }
-      tRenderer.render(tScene, tCamera);
-    }
-
-    // Componente interactivo para hacer clic en el trofeo
-    AFRAME.registerComponent('trofeo-premiacion', {
-      schema: { lugar: { type: 'string', default: 'gold' } },
-      init: function () {
-        const el = this.el;
-        const lugar = this.data.lugar;
-        const disparar = (e) => {
-          if (e) e.stopPropagation();
-          abrirModalTrofeo(lugar);
-        };
-        el.classList.add('clickable');
-        el.addEventListener('click', disparar);
-      }
-    });
-
+  <!-- COMPONENTES DE A-FRAME (INTERACCIÓN Y COLISIÓN) -->
+  <script>
+    // Componente interactivo para obras de arte
     AFRAME.registerComponent('obra-interactiva', {
       schema: {
-        titulo: { type: 'string', default: '' },
+        titulo: { type: 'string', default: 'Obra Sin Título' },
         desc: { type: 'string', default: '' },
-        link: { type: 'string', default: 'https://galerianebulosa.com/obras-destacadas/' }
+        link: { type: 'string', default: '' }
       },
       init: function () {
         const el = this.el;
-        const data = this.data;
-
-        const vincularClic = (target) => {
-          target.classList.add('clickable');
-          target.addEventListener('click', (e) => {
-            e.stopPropagation();
-            abrirModalObra(data.titulo, data.desc, data.link);
-          });
-        };
-
-        vincularClic(el);
-        el.querySelectorAll('a-plane, a-box').forEach(vincularClic);
+        el.classList.add('clickable');
+        el.addEventListener('click', () => {
+          abrirModalObra(this.data.titulo, this.data.desc, this.data.link);
+        });
       }
     });
 
+    // Componente interactivo para pantalla de YouTube
     AFRAME.registerComponent('pantalla-youtube', {
       schema: {
-        videoId: { type: 'string', default: '4HOu4_57T1U' },
-        titulo: { type: 'string', default: 'Presentación Galería Nebulosa' }
+        videoId: { type: 'string', default: 'GZRF6dSq7tk' },
+        titulo: { type: 'string', default: 'Video de Presentación' }
       },
       init: function () {
         const el = this.el;
-        const data = this.data;
-
-        const canvas = document.createElement('canvas');
-        canvas.width = 1280;
-        canvas.height = 720;
-        const ctx = canvas.getContext('2d');
-
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = `https://images.weserv.nl/?url=img.youtube.com/vi/${data.videoId}/hqdefault.jpg`;
-
-        const dibujarPreview = () => {
-          if (img.complete && img.naturalWidth !== 0) {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          } else {
-            const grad = ctx.createLinearGradient(0, 0, 1280, 720);
-            grad.addColorStop(0, '#1c1032');
-            grad.addColorStop(1, '#0b0817');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-          }
-
-          ctx.fillStyle = 'rgba(15, 10, 30, 0.4)';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          ctx.fillStyle = 'rgba(168, 85, 247, 0.88)';
-          ctx.beginPath();
-          ctx.arc(canvas.width / 2, canvas.height / 2, 75, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.moveTo(canvas.width / 2 - 25, canvas.height / 2 - 40);
-          ctx.lineTo(canvas.width / 2 + 45, canvas.height / 2);
-          ctx.lineTo(canvas.width / 2 - 25, canvas.height / 2 + 40);
-          ctx.closePath();
-          ctx.fill();
-
-          ctx.fillStyle = 'rgba(10, 8, 20, 0.75)';
-          ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = "bold 32px 'Poppins', sans-serif";
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
-          ctx.fillText("▶ " + data.titulo, 35, canvas.height - 40);
-
-          const texture = new THREE.CanvasTexture(canvas);
-          texture.colorSpace = THREE.SRGBColorSpace;
-          const mesh = el.getObject3D('mesh');
-          if (mesh) {
-            mesh.material = new THREE.MeshBasicMaterial({ 
-              map: texture, 
-              side: THREE.FrontSide,
-              polygonOffset: true,
-              polygonOffsetFactor: -1,
-              polygonOffsetUnits: -1
-            });
-            mesh.material.needsUpdate = true;
-          }
-        };
-
-        img.onload = dibujarPreview;
-        img.onerror = dibujarPreview;
-        dibujarPreview();
-
         el.classList.add('clickable');
-        el.addEventListener('click', (e) => {
-          e.stopPropagation();
-          abrirModalVideo(data.videoId);
+        el.addEventListener('click', () => {
+          abrirVideoYoutube(this.data.videoId);
         });
       }
     });
 
-    AFRAME.registerComponent('lienzo-obra', {
+    // Componente interactivo para trofeos
+    AFRAME.registerComponent('trofeo-premiacion', {
       schema: {
-        titulo: { type: 'string', default: 'OBRA DISPONIBLE' },
-        subtitulo: { type: 'string', default: 'Galería Nebulosa' },
-        src: { type: 'string', default: '' }
+        lugar: { type: 'string', default: 'gold' }
       },
       init: function () {
         const el = this.el;
-        const data = this.data;
-
-        const aplicarTextura = (texture) => {
-          texture.colorSpace = THREE.SRGBColorSpace;
-          const mesh = el.getObject3D('mesh');
-          if (mesh) {
-            mesh.material = new THREE.MeshBasicMaterial({ 
-              map: texture, 
-              side: THREE.FrontSide,
-              toneMapped: false,
-              polygonOffset: true,
-              polygonOffsetFactor: -1,
-              polygonOffsetUnits: -1
-            });
-            mesh.material.needsUpdate = true;
-          }
-        };
-
-        const dibujarCartelFallback = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = 1024;
-          canvas.height = 720;
-          const ctx = canvas.getContext('2d');
-
-          const grad = ctx.createLinearGradient(0, 0, 1024, 720);
-          grad.addColorStop(0, '#221538');
-          grad.addColorStop(0.5, '#161026');
-          grad.addColorStop(1, '#0c0a15');
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          ctx.strokeStyle = '#c084fc';
-          ctx.lineWidth = 8;
-          ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = "bold 52px 'Poppins', sans-serif";
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(data.titulo, canvas.width / 2, canvas.height / 2 - 35);
-
-          ctx.fillStyle = '#e9d5ff';
-          ctx.font = "400 30px 'Poppins', sans-serif";
-          ctx.fillText(data.subtitulo, canvas.width / 2, canvas.height / 2 + 45);
-
-          const texture = new THREE.CanvasTexture(canvas);
-          aplicarTextura(texture);
-        };
-
-        if (data.src && data.src.trim() !== '') {
-          let urlLimpia = data.src.trim();
-          if (urlLimpia.startsWith('http://')) {
-            urlLimpia = 'https://' + urlLimpia.substring(7);
-          }
-          let urlCORS = urlLimpia;
-          if (urlLimpia.includes('galerianebulosa.com') || urlLimpia.includes('wp-content')) {
-            urlCORS = 'https://images.weserv.nl/?url=' + encodeURIComponent(urlLimpia);
-          }
-
-          const loader = new THREE.TextureLoader();
-          loader.setCrossOrigin('anonymous');
-          loader.load(
-            urlCORS,
-            function (tex) { aplicarTextura(tex); },
-            undefined,
-            function () { 
-              loader.load(urlLimpia, function (tex2) {
-                aplicarTextura(tex2);
-              }, undefined, function () {
-                dibujarCartelFallback();
-              });
-            }
-          );
-        } else {
-          dibujarCartelFallback();
-        }
+        el.classList.add('clickable');
+        el.addEventListener('click', () => {
+          abrirVisorTrofeo(this.data.lugar);
+        });
       }
     });
 
-    AFRAME.registerComponent('cuadro-ganador', {
-      schema: {
-        titulo: { type: 'string', default: 'GANADORES DE LOS PRIMEROS LUGARES' },
-        nombre: { type: 'string', default: 'Artistas Galardonados' }
+    // COMPONENTE DE COLISIONES BLINDADAS CON MUROS Y PEDESTALES
+    AFRAME.registerComponent('colision-paredes', {
+      init: function () {
+        this.prev = new THREE.Vector3();
+        this.bueno = new THREE.Vector3();
+        this.el.object3D.getWorldPosition(this.prev);
+        this.bueno.copy(this.prev);
       },
-      init: function () {
-        const el = this.el;
-        const data = this.data;
 
-        const canvas = document.createElement('canvas');
-        canvas.width = 720;
-        canvas.height = 1024;
-        const ctx = canvas.getContext('2d');
+      tick: function () {
+        if (window.enNebulosa) return;
 
-        const fondo = ctx.createLinearGradient(0, 0, 720, 1024);
-        fondo.addColorStop(0, '#2e1845');
-        fondo.addColorStop(0.5, '#201230');
-        fondo.addColorStop(1, '#170c24');
-        ctx.fillStyle = fondo;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const pos = this.el.object3D.position;
 
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 14;
-        ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+        // Función que comprueba si la posición (x, z) está dentro de los límites de la galería
+        const esDentroDeLaGaleria = (x, z) => {
+          if (x < -20.1 || x > 20.1 || z < -25.1 || z > 25.1) return false;
 
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+          // Pasillo principal de la galería
+          if (z >= -10.5 && z <= -4.5 && x >= -19.5 && x <= 19.5) return true;
 
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = "bold 44px sans-serif";
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText("★   ★   ★", canvas.width / 2, 130);
+          // Sala trasera de premiación y trofeos
+          if (z < -10.5 && z >= -24.8 && x >= -10.0 && x <= 0.0) return true;
 
-        ctx.font = "bold 24px 'Poppins', sans-serif";
-        ctx.fillStyle = "#fef3c7";
-        ctx.fillText("RECONOCIMIENTO DE HONOR", canvas.width / 2, 210);
+          // Salas laterales o abiertas
+          if (z > -4.5 && z <= 24.8 && x >= -19.5 && x <= 19.5) return true;
 
-        ctx.beginPath();
-        ctx.moveTo(120, 250);
-        ctx.lineTo(600, 250);
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = "bold 30px 'Poppins', sans-serif";
-        ctx.fillText("GANADORES DE LOS", canvas.width / 2, 335);
-        ctx.font = "bold 34px 'Poppins', sans-serif";
-        ctx.fillText("PRIMEROS LUGARES", canvas.width / 2, 380);
-
-        ctx.font = "bold 105px sans-serif";
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillText("★", canvas.width / 2, 510);
-
-        ctx.fillStyle = '#fef08a';
-        ctx.font = "bold 44px 'Poppins', sans-serif";
-        ctx.fillText(data.nombre, canvas.width / 2, 650);
-
-        ctx.fillStyle = '#e2e8f0';
-        ctx.font = "400 26px 'Poppins', sans-serif";
-        ctx.fillText("Galería Nebulosa", canvas.width / 2, 740);
-
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = "bold 32px sans-serif";
-        ctx.fillText("✦   ★   ✦", canvas.width / 2, 880);
-
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.colorSpace = THREE.SRGBColorSpace;
-        const mesh = el.getObject3D('mesh');
-        if (mesh) {
-          mesh.material = new THREE.MeshBasicMaterial({ 
-            map: texture, 
-            side: THREE.FrontSide,
-            toneMapped: false,
-            polygonOffset: true,
-            polygonOffsetFactor: -1,
-            polygonOffsetUnits: -1
-          });
-          mesh.material.needsUpdate = true;
-        }
-      }
-    });
-
-    AFRAME.registerComponent('enhancer', {
-      init: function () {
-        this.el.addEventListener('model-loaded', () => {
-          const mesh = this.el.getObject3D('mesh');
-          if (!mesh) return;
-
-          const objetosParaEliminar = [];
-
-          mesh.traverse((node) => {
-            const matName = node.material && node.material.name ? node.material.name.toLowerCase() : "";
-            const objName = node.name ? node.name.toLowerCase() : "";
-            const combined = objName + " " + matName;
-
-            const esVegetacion = combined.includes('plant') || combined.includes('leaf') || 
-                                 combined.includes('leaves') || combined.includes('hoja') || 
-                                 combined.includes('pot') || combined.includes('maceta') || 
-                                 combined.includes('tree') || combined.includes('foliage') || 
-                                 combined.includes('flora') || combined.includes('flower') || 
-                                 combined.includes('branch') || combined.includes('vase');
-
-            let tieneColorPlanta = false;
-            if (node.material && node.material.color) {
-              const c = node.material.color;
-              if (c.g > 0.18 && c.g > c.r * 1.15 && c.g > c.b * 1.05) {
-                tieneColorPlanta = true;
-              }
-            }
-
-            if (esVegetacion || tieneColorPlanta) {
-              objetosParaEliminar.push(node);
-            }
-
-            if (node.isMesh && node.material) {
-              if (combined.includes('glass') || combined.includes('window') || combined.includes('vidrio') || combined.includes('cristal') || combined.includes('panel')) {
-                node.material.color = new THREE.Color(0x22222b);
-                node.material.transparent = true;
-                node.material.opacity = 0.52;
-                node.material.roughness = 0.20;
-                node.material.metalness = 0.15;
-                node.material.depthWrite = false;
-              } 
-              else if (combined.includes('light') || combined.includes('foco') || combined.includes('lamp') || combined.includes('spot') || combined.includes('bulb')) {
-                node.material.emissive = new THREE.Color(0xffeedd);
-                node.material.emissiveIntensity = 4.0;
-              } 
-              else if (combined.includes('floor') || combined.includes('suelo') || combined.includes('piso')) {
-                node.material.color = new THREE.Color(0xd0d4de);
-                node.material.roughness = 0.25;
-                node.material.metalness = 0.08;
-              } 
-              else if (combined.includes('wall') || combined.includes('pared') || combined.includes('muro')) {
-                node.material.color = new THREE.Color(0x584b70);
-                node.material.roughness = 0.88;
-                node.material.metalness = 0.02;
-              } 
-              node.material.needsUpdate = true;
-            }
-          });
-
-          objetosParaEliminar.forEach((obj) => {
-            obj.visible = false;
-            obj.scale.set(0, 0, 0);
-            if (obj.geometry) obj.geometry.dispose();
-            if (obj.parent) obj.parent.remove(obj);
-          });
-        });
-      }
-    });
-
-    AFRAME.registerComponent('rotulo-poppins', {
-      init: function () {
-        document.fonts.ready.then(() => {
-          const canvas = document.createElement('canvas');
-          canvas.width = 1024;
-          canvas.height = 256;
-          const ctx = canvas.getContext('2d');
-
-          ctx.fillStyle = "rgba(18, 16, 30, 0.95)";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          ctx.strokeStyle = "rgba(230, 220, 255, 0.35)";
-          ctx.lineWidth = 6;
-          ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-
-          ctx.font = "600 48px 'Poppins', sans-serif";
-          ctx.fillStyle = "#ffffff";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("«Donde cada arte brilla»", canvas.width / 2, canvas.height / 2);
-
-          const texture = new THREE.CanvasTexture(canvas);
-          const mat = new THREE.MeshBasicMaterial({ 
-            map: texture, 
-            transparent: true, 
-            side: THREE.DoubleSide 
-          });
-          const mesh = this.el.getObject3D('mesh');
-          if (mesh) mesh.material = mat;
-        });
-      }
-    });
-
-    AFRAME.registerComponent('video-handler', {
-      init: function () {
-        const video = document.querySelector('#video-nebulosa');
-        if (!video) return;
-
-        video.playbackRate = 1.0;
-
-        const startVideo = () => {
-          if (video.paused) {
-            video.playbackRate = 1.0;
-            video.play().catch(() => {});
-          }
-          window.removeEventListener('click', startVideo);
-          window.removeEventListener('keydown', startVideo);
+          return false;
         };
-        window.addEventListener('click', startVideo);
-        window.addEventListener('keydown', startVideo);
+
+        const permitido = (x, z) => {
+          if (!esDentroDeLaGaleria(x, z)) return false;
+          if (colisionaConTrofeos(x, z)) return false;
+          return true;
+        };
+
+        // Si se movió
+        if (pos.x !== this.prev.x || pos.z !== this.prev.z) {
+          if (!permitido(pos.x, pos.z)) {
+            // Intentar deslizamiento en eje X
+            if (permitido(pos.x, this.prev.z)) {
+              pos.z = this.prev.z;
+            }
+            // Intentar deslizamiento en eje Z
+            else if (permitido(this.prev.x, pos.z)) {
+              pos.x = this.prev.x;
+            }
+            // Si ambas direcciones colisionan, frenar en seco en la última posición válida
+            else {
+              pos.x = this.bueno.x;
+              pos.z = this.bueno.z;
+            }
+          } else {
+            this.bueno.copy(pos);
+          }
+        }
+
+        // Siempre mantener el nivel del piso
+        pos.y = 2.05;
+        this.prev.copy(pos);
       }
     });
   </script>
 </head>
+
 <body style="margin: 0; overflow: hidden; background-color: #000;">
 
-  <!-- VENTANA EMERGENTE DE INFORMACIÓN DE OBRA -->
-  <div id="artwork-modal-overlay" onclick="if(event.target === this) cerrarModalObra()">
-    <div id="artwork-modal">
-      <button id="artwork-modal-close" onclick="cerrarModalObra()" title="Cerrar">✕</button>
-      <span id="artwork-modal-badge">Galería Nebulosa</span>
-      <h2 id="artwork-modal-title">Título de la Obra</h2>
-      <p id="artwork-modal-desc">Descripción del cuadro...</p>
-      <a id="artwork-modal-link" href="https://galerianebulosa.com/obras-destacadas/" target="_blank">Ver obra completa ↗</a>
+  <!-- TOP BAR -->
+  <div id="top-bar">
+    <div id="top-bar-title">
+      <div id="top-bar-dot"></div>
+      <span>Experiencia 3D Interactiva</span>
+    </div>
+    <div id="top-bar-actions">
+      <button class="top-btn" onclick="abrirVideoYoutube('GZRF6dSq7tk')">
+        <span>💬 Chat en Vivo</span>
+      </button>
+      <button class="top-btn" onclick="salirANebulosa()">
+        <span>🌌 Salir</span>
+      </button>
     </div>
   </div>
 
-  <!-- VENTANA EMERGENTE DE REPRODUCTOR YOUTUBE CON BOTÓN 'X' FLOTANTE -->
-  <div id="video-modal-overlay" onclick="if(event.target === this) cerrarModalVideo()">
-    <div id="video-modal-wrapper">
-      <button id="video-modal-close" onclick="cerrarModalVideo()" title="Cerrar video (Esc)">✕</button>
-      <div id="video-modal-container">
-        <iframe id="youtube-player-frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-      </div>
+  <!-- GUÍA DE ARTISTA -->
+  <div id="artist-guide-card">
+    <div id="artist-guide-icon">🎙️</div>
+    <div>
+      <div id="artist-guide-name">Creative Art Violeta (En Directo)</div>
+      <div id="artist-guide-sub">Recorrido Curatorial Guiado</div>
     </div>
   </div>
 
-  <!-- VISOR 3D FLOTANTE DE PREMIACIÓN (CON FONDO CÓSMICO Y PEDESTAL FIJO) -->
-  <div id="trofeo-viewer-overlay" onclick="if(event.target === this) cerrarModalTrofeo()">
-    <div id="trofeo-viewer-container">
-      <button id="trofeo-viewer-close" onclick="cerrarModalTrofeo()" title="Cerrar">✕</button>
-      
-      <!-- Lado izquierdo: Video de nebulosa como fondo exclusivo (carga diferida sin consumo previo) -->
-      <div id="trofeo-viewer-canvas-wrap">
-        <video id="trofeo-bg-video" src="nebulosa.mp4" preload="none" loop muted playsinline></video>
-      </div>
-
-      <!-- Lado derecho: Tarjeta de Honor legible con fondo oscuro y Poppins -->
-      <div id="trofeo-viewer-card">
-        <span id="trofeo-viewer-badge" style="display: inline-block; align-self: flex-start; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px;">
-          ★ PRIMER LUGAR (ORO)
-        </span>
-        <h2 id="trofeo-viewer-artist" style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 4px 0; line-height: 1.2;">
-          Nombre del Artista
-        </h2>
-        <span style="font-size: 11px; font-weight: 600; color: #c084fc; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
-          Constelación de Creadores
-        </span>
-        <p id="trofeo-viewer-desc" style="font-size: 12px; line-height: 1.6; color: #d8b4fe; margin: 0 0 16px 0;">
-          Máximo galardón de la muestra trimestral Constelación de Creadores. Reconocimiento de honor a la excelencia artística, técnica y concepto plástico.
-        </p>
-        <span style="font-size: 10px; color: #9c9cb8;">Arrastra para girar 360°</span>
-      </div>
-    </div>
+  <!-- BOTÓN DIRECT PLAY -->
+  <div id="direct-play-btn" onclick="abrirVideoYoutube('GZRF6dSq7tk')">
+    <div id="direct-play-icon">▶</div>
+    <span style="color:#fff; font-size:11px; font-weight:600;">Ver Presentación</span>
   </div>
 
-  <!-- GUÍA DE NAVEGACIÓN Y BOTONES EN PANTALLA -->
+  <!-- CONTROLES DE AUDIO -->
+  <div id="audio-controls">
+    <button class="audio-btn" id="btn-audio-musica" onclick="toggleMusica()" title="Música Ambiental">
+      <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+    </button>
+    <button class="audio-btn" id="btn-audio-voz" onclick="toggleVoz()" title="Voz Guía">
+      <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+    </button>
+  </div>
+  <audio id="audio-musica" loop src="musica.mp3" preload="auto"></audio>
+  <audio id="audio-voz" src="voz.mp3" preload="auto"></audio>
+
+  <!-- PANEL DE GUÍA DE NAVEGACIÓN CON FLECHITA MINIMIZADORA -->
   <div id="nav-guide">
-    <div class="guide-title">Navegación</div>
-    
-    <div class="arrow-pad">
-      <div class="key-cap" onclick="moverConBoton('ArrowUp')">↑</div>
-      <div class="arrow-row">
-        <div class="key-cap" onclick="moverConBoton('ArrowLeft')">←</div>
-        <div class="key-cap" onclick="moverConBoton('ArrowDown')">↓</div>
-        <div class="key-cap" onclick="moverConBoton('ArrowRight')">→</div>
+    <button id="btn-toggle-nav-guide" onclick="alternarNavGuide()" title="Minimizar / Mostrar panel de navegación">
+      ▶
+    </button>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+      <div id="nav-guide-title">NAVEGACIÓN</div>
+      <button onclick="alternarNavGuide()" title="Minimizar panel" style="background: none; border: none; color: #a855f7; cursor: pointer; font-size: 11px; padding: 0 2px;">✕</button>
+    </div>
+
+    <div id="nav-dpad">
+      <button class="dpad-btn" id="dpad-up">↑</button>
+      <button class="dpad-btn" id="dpad-left">←</button>
+      <button class="dpad-btn" id="dpad-down">↓</button>
+      <button class="dpad-btn" id="dpad-right">→</button>
+    </div>
+    <div id="nav-guide-sub">Clic flechas o WASD</div>
+    <div id="nav-divider"></div>
+    <div id="nav-mouse-info">
+      <div id="mouse-icon"></div>
+      <div id="nav-mouse-text">
+        <strong>Girar 360°</strong><br>
+        (Arrastrar mouse / dedo)
       </div>
     </div>
-    <span style="font-size: 10px; color: #9c9cb8;">Clic flechas o WASD</span>
-
-    <div style="width: 80%; height: 1px; background: rgba(255,255,255,0.15);"></div>
-
-    <div class="guide-item">
-      <div class="mouse-icon"></div>
-      <span>Girar 360°<br>(Arrastrar mouse / dedo)</span>
-    </div>
-
-    <div style="width: 80%; height: 1px; background: rgba(255,255,255,0.15);"></div>
-
-    <!-- BOTÓN PARA SALIR A LA NEBULOSA O REGRESAR A LA GALERÍA -->
-    <button id="btn-toggle-nebulosa" onclick="alternarNebulosa()">🌌 Salir a la Nebulosa</button>
+    <button id="btn-salir-nebulosa" onclick="salirANebulosa()">
+      🌌 Salir a la Nebulosa
+    </button>
   </div>
 
-  <!-- ESCENA PÚBLICA (CARGA INMEDIATA SIN BLOQUEO) -->
-  <a-scene 
-    video-handler
-    loading-screen="enabled: false;"
-    cursor="rayOrigin: mouse;"
-    raycaster="objects: .clickable;"
-    renderer="logarithmicDepthBuffer: true; colorManagement: true; physicallyCorrectLights: true; exposure: 1.0; toneMapping: ACESFilmic;">
+  <!-- BOTÓN PANTALLA COMPLETA -->
+  <div id="fullscreen-btn" onclick="togglePantallaCompleta()" title="Pantalla Completa">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+    </svg>
+  </div>
 
-    <!-- timeout="100": No retiene la pantalla en negro si los videos tardan en responder -->
+  <!-- PANTALLA NEBULOSA -->
+  <div id="overlay-nebulosa">
+    <button id="btn-volver-galeria" onclick="volverAGaleria()">
+      ← Volver a la Galería
+    </button>
+    <video id="video-nebulosa" loop playsinline preload="auto">
+      <source src="nebulosa.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- MODAL DE OBRA -->
+  <div id="artwork-modal-overlay">
+    <div id="artwork-modal">
+      <button id="artwork-modal-close" onclick="cerrarModalObra()">✕</button>
+      <h3 id="artwork-modal-title">Título de la Obra</h3>
+      <div id="artwork-modal-desc">Descripción de la obra...</div>
+      <a id="artwork-modal-btn" href="#" target="_blank">
+        <span>Ver Detalles de Obra</span>
+        <span>→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- MODAL DE YOUTUBE -->
+  <div id="video-modal-overlay">
+    <div id="video-modal">
+      <button id="video-modal-close" onclick="cerrarVideoYoutube()">✕</button>
+      <div class="video-container" id="youtube-iframe-container"></div>
+    </div>
+  </div>
+
+  <!-- MODAL VISOR 3D FLOTANTE PARA TROFEOS -->
+  <div id="trofeo-modal-overlay">
+    <div id="trofeo-modal">
+      <button id="trofeo-modal-close" onclick="cerrarVisorTrofeo()">✕</button>
+      <h3 id="trofeo-modal-title">Trofeo</h3>
+      <div id="trofeo-modal-sub">Premio Oficial</div>
+      <div id="trofeo-canvas-container">
+        <div id="trofeo-canvas-hint">Arrastra para rotar 360° en 3D</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESCENA 3D A-FRAME -->
+  <a-scene 
+    loading-screen="enabled: false;"
+    renderer="antialias: true; colorManagement: true; powerPreference: high-performance; precision: medium;" 
+    cursor="rayOrigin: mouse" 
+    raycaster="objects: .clickable">
+
+    <!-- ASSETS -->
     <a-assets timeout="100">
-      <a-asset-item id="modelo-sala" src="galeria.glb"></a-asset-item>
-      
-      <!-- MODELOS 3D DE LOS TROFEOS -->
+      <a-asset-item id="modelo-galeria" src="galeria.glb"></a-asset-item>
       <a-asset-item id="trofeo-oro" src="Trofeo del primer lugar.glb"></a-asset-item>
       <a-asset-item id="trofeo-plata" src="Trofeo de estrella del segundo lugar.glb"></a-asset-item>
       <a-asset-item id="trofeo-bronce" src="Trofeo de estrella del tercer lugar.glb"></a-asset-item>
-      
-      <video id="video-nebulosa" 
-             src="nebulosa.mp4" 
-             autoplay 
-             loop 
-             muted 
-             playsinline 
-             webkit-playsinline 
-             crossorigin="anonymous">
-      </video>
     </a-assets>
 
-    <!-- FONDO DE VIDEO CÓSMICO -->
-    <a-videosphere src="#video-nebulosa" rotation="0 -90 0"></a-videosphere>
+    <!-- ILUMINACIÓN -->
+    <a-entity light="type: ambient; color: #ffffff; intensity: 1.1;"></a-entity>
+    <a-entity light="type: directional; color: #ede9fe; intensity: 0.8;" position="5 10 7"></a-entity>
+    <a-entity light="type: directional; color: #fae8ff; intensity: 0.5;" position="-5 8 -7"></a-entity>
 
-    <!-- ILUMINACIÓN AMBIENTAL DE LA SALA -->
-    <a-entity light="type: ambient; color: #f0f2fa; intensity: 1.0;"></a-entity>
-    <a-entity light="type: hemisphere; groundColor: #282835; color: #ffffff; intensity: 1.0;"></a-entity>
-
-    <!-- LUZ CENITAL DESDE LA CÚPULA -->
-    <a-entity light="type: directional; color: #ffffff; intensity: 1.2;" position="0 25 -16"></a-entity>
-
-    <!-- CONOS DE LUZ CÁLIDA SOBRE LAS PAREDES -->
-    <a-entity light="type: spot; color: #fff1d6; intensity: 4.5; angle: 50; penumbra: 0.7; distance: 28;" position="-6 7.5 -16" rotation="-65 -90 0"></a-entity>
-    <a-entity light="type: spot; color: #fff1d6; intensity: 4.5; angle: 50; penumbra: 0.7; distance: 28;" position="6 7.5 -16" rotation="-65 90 0"></a-entity>
-    <a-entity light="type: spot; color: #fff1d6; intensity: 5.0; angle: 52; penumbra: 0.7; distance: 35;" position="0 8.0 -22" rotation="-55 0 0"></a-entity>
-
-    <!-- MODELO 3D DE LA SALA -->
-    <a-entity gltf-model="#modelo-sala" enhancer position="0 0 0"></a-entity>
-
-    <!-- RÓTULO EXTERIOR -->
-    <a-plane id="rotulo-exterior" position="-18.13 2.20 -4.89" rotation="0 0 0" width="3.6" height="0.9" rotulo-poppins></a-plane>
+    <!-- MODELO 3D DE LA GALERÍA -->
+    <a-entity id="entidad-galeria" gltf-model="#modelo-galeria" position="0 0 0"></a-entity>
 
 
     <!-- ========================================================= -->
-    <!-- SECCIÓN: GRUPO 1 - PARED IZQUIERDA (Obras 1 al 3 + Cuadro de Honor) -->
+    <!-- SECCIÓN: CUADROS Y OBRAS DE ARTE EN LAS PAREDES           -->
     <!-- ========================================================= -->
-
-    <!-- CUADRO DE HONOR -->
-    <a-entity id="grupo-1-cuadro-honor"
-              obra-interactiva="titulo: Ganadores de los Primeros Lugares; desc: Reconocimiento especial a los artistas galardonados en la muestra anual.; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-9.95 1.95 -16.08" rotation="0 90 0">
-      <a-box width="1.20" height="1.80" depth="0.08" color="#261338" material="roughness: 0.25; metalness: 0.5"></a-box>
-      <a-plane position="0 0 0.052" width="1.10" height="1.70"
-               cuadro-ganador="titulo: GANADORES DE LOS PRIMEROS LUGARES; nombre: Artistas Galardonados;">
-      </a-plane>
-    </a-entity>
 
     <!-- OBRA 1 -->
     <a-entity id="grupo-1-obra-1"
               obra-interactiva="titulo: Título de Obra 1; desc: Descripción del cuadro 1; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-9.86 1.95 -18.11" rotation="0 90 0">
+              position="-19.98 2.05 -8.00" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 1; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
@@ -1725,7 +1236,7 @@
     <!-- OBRA 2 -->
     <a-entity id="grupo-1-obra-2"
               obra-interactiva="titulo: Título de Obra 2; desc: Descripción del cuadro 2; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-9.93 1.95 -20.81" rotation="0 90 0">
+              position="-19.98 2.05 -12.40" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 2; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
@@ -1735,32 +1246,27 @@
     <!-- OBRA 3 -->
     <a-entity id="grupo-1-obra-3"
               obra-interactiva="titulo: Título de Obra 3; desc: Descripción del cuadro 3; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-9.94 1.95 -23.51" rotation="0 90 0">
+              position="-19.98 2.05 4.00" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 3; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
-
-    <!-- ========================================================= -->
-    <!-- SECCIÓN: GRUPO 2 - PARED DERECHA TABIQUE (Obras 4 al 6)   -->
-    <!-- ========================================================= -->
-
     <!-- OBRA 4 -->
-    <a-entity id="obra-4"
+    <a-entity id="grupo-1-obra-4"
               obra-interactiva="titulo: Título de Obra 4; desc: Descripción del cuadro 4; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-0.16 2.05 -16.99" rotation="0 -90 0">
+              position="-19.98 2.05 8.00" rotation="0 90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 4; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 4; subtitulo: Grupo 1; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 5 -->
-    <a-entity id="obra-5"
+    <a-entity id="grupo-2-obra-5"
               obra-interactiva="titulo: Título de Obra 5; desc: Descripción del cuadro 5; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-0.28 2.05 -20.06" rotation="0 -90 0">
+              position="-16.00 2.05 -24.98" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 5; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
@@ -1768,109 +1274,99 @@
     </a-entity>
 
     <!-- OBRA 6 -->
-    <a-entity id="obra-6"
+    <a-entity id="grupo-2-obra-6"
               obra-interactiva="titulo: Título de Obra 6; desc: Descripción del cuadro 6; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-0.15 2.05 -23.12" rotation="0 -90 0">
+              position="-12.00 2.05 -24.98" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 6; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
-
-    <!-- ========================================================= -->
-    <!-- SECCIÓN: GRUPO 3 - PARED DE FONDO (Obras 7 al 9)          -->
-    <!-- ========================================================= -->
-
     <!-- OBRA 7 -->
-    <a-entity id="grupo-3-obra-7"
+    <a-entity id="grupo-2-obra-7"
               obra-interactiva="titulo: Título de Obra 7; desc: Descripción del cuadro 7; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-8.00 2.03 -25.02" rotation="0 0 0">
+              position="12.00 2.05 -24.98" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 7; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 7; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 8 (Homologada al tamaño estándar 2.5 x 1.8) -->
-    <a-entity id="grupo-3-obra-8"
-              obra-interactiva="titulo: Título de Obra 8; desc: Descripción de la pieza central de honor.; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-4.94 2.05 -24.89" rotation="0 0 0">
+    <!-- OBRA 8 -->
+    <a-entity id="grupo-2-obra-8"
+              obra-interactiva="titulo: Título de Obra 8; desc: Descripción del cuadro 8; link: https://galerianebulosa.com/obras-destacadas/"
+              position="16.00 2.05 -24.98" rotation="0 0 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 8; subtitulo: Espacio Principal; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 8; subtitulo: Grupo 2; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 9 -->
     <a-entity id="grupo-3-obra-9"
               obra-interactiva="titulo: Título de Obra 9; desc: Descripción del cuadro 9; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-1.88 2.06 -24.78" rotation="0 0 0">
+              position="-16.00 2.05 24.98" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 9; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
-
-    <!-- ========================================================= -->
-    <!-- SECCIÓN: GRUPO 4 - PARED LATERAL DERECHA (Obras 10 al 16) -->
-    <!-- ========================================================= -->
-
     <!-- OBRA 10 -->
-    <a-entity id="grupo-4-obra-10"
+    <a-entity id="grupo-3-obra-10"
               obra-interactiva="titulo: Título de Obra 10; desc: Descripción del cuadro 10; link: https://galerianebulosa.com/obras-destacadas/"
-              position="1.55 2.05 -14.98" rotation="0 0 0">
+              position="-12.00 2.05 24.98" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 10; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 10; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 11 -->
-    <a-entity id="grupo-4-obra-11"
+    <a-entity id="grupo-3-obra-11"
               obra-interactiva="titulo: Título de Obra 11; desc: Descripción del cuadro 11; link: https://galerianebulosa.com/obras-destacadas/"
-              position="4.32 2.05 -15.02" rotation="0 0 0">
+              position="-6.00 2.05 24.98" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 11; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 11; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 12 -->
-    <a-entity id="grupo-4-obra-12"
+    <a-entity id="grupo-3-obra-12"
               obra-interactiva="titulo: Título de Obra 12; desc: Descripción del cuadro 12; link: https://galerianebulosa.com/obras-destacadas/"
-              position="7.14 2.05 -15.02" rotation="0 0 0">
+              position="6.00 2.05 24.98" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 12; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 12; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 13 -->
-    <a-entity id="grupo-4-obra-13"
+    <a-entity id="grupo-3-obra-13"
               obra-interactiva="titulo: Título de Obra 13; desc: Descripción del cuadro 13; link: https://galerianebulosa.com/obras-destacadas/"
-              position="9.93 2.05 -14.90" rotation="0 0 0">
+              position="12.00 2.05 24.98" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 13; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 13; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 14 -->
-    <a-entity id="grupo-4-obra-14"
+    <a-entity id="grupo-3-obra-14"
               obra-interactiva="titulo: Título de Obra 14; desc: Descripción del cuadro 14; link: https://galerianebulosa.com/obras-destacadas/"
-              position="12.77 2.05 -14.92" rotation="0 0 0">
+              position="16.00 2.05 24.98" rotation="0 180 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 14; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 14; subtitulo: Grupo 3; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 15 -->
     <a-entity id="grupo-4-obra-15"
               obra-interactiva="titulo: Título de Obra 15; desc: Descripción del cuadro 15; link: https://galerianebulosa.com/obras-destacadas/"
-              position="15.60 2.05 -14.91" rotation="0 0 0">
+              position="20.00 2.05 15.00" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 15; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
@@ -1880,42 +1376,37 @@
     <!-- OBRA 16 -->
     <a-entity id="grupo-4-obra-16"
               obra-interactiva="titulo: Título de Obra 16; desc: Descripción del cuadro 16; link: https://galerianebulosa.com/obras-destacadas/"
-              position="18.33 2.05 -14.85" rotation="0 0 0">
+              position="20.00 2.05 11.00" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 16; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
-
-    <!-- ========================================================= -->
-    <!-- SECCIÓN: GRUPO 5 - PARED PERPENDICULAR DERECHA (Obras 17 al 30) -->
-    <!-- ========================================================= -->
-
     <!-- OBRA 17 -->
-    <a-entity id="grupo-5-obra-17"
+    <a-entity id="grupo-4-obra-17"
               obra-interactiva="titulo: Título de Obra 17; desc: Descripción del cuadro 17; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 -13.46" rotation="0 -90 0">
+              position="20.00 2.05 7.00" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 17; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 17; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 18 -->
-    <a-entity id="grupo-5-obra-18"
+    <a-entity id="grupo-4-obra-18"
               obra-interactiva="titulo: Título de Obra 18; desc: Descripción del cuadro 18; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 -10.66" rotation="0 -90 0">
+              position="20.00 2.05 3.00" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 18; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 18; subtitulo: Grupo 4; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 19 -->
     <a-entity id="grupo-5-obra-19"
               obra-interactiva="titulo: Título de Obra 19; desc: Descripción del cuadro 19; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 -7.86" rotation="0 -90 0">
+              position="20.00 2.05 -1.06" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 19; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
@@ -1935,7 +1426,7 @@
     <!-- OBRA 21 -->
     <a-entity id="grupo-5-obra-21"
               obra-interactiva="titulo: Título de Obra 21; desc: Descripción del cuadro 21; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 -2.26" rotation="0 -90 0">
+              position="20.00 2.05 -9.06" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 21; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
@@ -1945,7 +1436,7 @@
     <!-- OBRA 22 -->
     <a-entity id="grupo-5-obra-22"
               obra-interactiva="titulo: Título de Obra 22; desc: Descripción del cuadro 22; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 0.54" rotation="0 -90 0">
+              position="20.00 2.05 -13.06" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
                lienzo-obra="titulo: OBRA 22; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
@@ -1953,412 +1444,22 @@
     </a-entity>
 
     <!-- OBRA 23 -->
-    <a-entity id="grupo-5-obra-23"
+    <a-entity id="grupo-6-obra-23"
               obra-interactiva="titulo: Título de Obra 23; desc: Descripción del cuadro 23; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 3.34" rotation="0 -90 0">
+              position="20.00 2.05 -17.00" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 23; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 23; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
     <!-- OBRA 24 -->
-    <a-entity id="grupo-24-obra-24"
+    <a-entity id="grupo-6-obra-24"
               obra-interactiva="titulo: Título de Obra 24; desc: Descripción del cuadro 24; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 6.14" rotation="0 -90 0">
+              position="20.00 2.05 -21.00" rotation="0 -90 0">
       <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
       <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 24; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 25 -->
-    <a-entity id="grupo-5-obra-25"
-              obra-interactiva="titulo: Título de Obra 25; desc: Descripción del cuadro 25; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 8.94" rotation="0 -90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 25; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 26 -->
-    <a-entity id="grupo-5-obra-26"
-              obra-interactiva="titulo: Título de Obra 26; desc: Descripción del cuadro 26; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 11.74" rotation="0 -90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 26; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 27 -->
-    <a-entity id="grupo-5-obra-27"
-              obra-interactiva="titulo: Título de Obra 27; desc: Descripción del cuadro 27; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 14.54" rotation="0 -90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 27; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 28 -->
-    <a-entity id="grupo-5-obra-28"
-              obra-interactiva="titulo: Título de Obra 28; desc: Descripción del cuadro 28; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 17.34" rotation="0 -90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 28; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 29 -->
-    <a-entity id="grupo-5-obra-29"
-              obra-interactiva="titulo: Título de Obra 29; desc: Descripción del cuadro 29; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 20.14" rotation="0 -90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 29; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 30 -->
-    <a-entity id="grupo-5-obra-30"
-              obra-interactiva="titulo: Título de Obra 30; desc: Descripción del cuadro 30; link: https://galerianebulosa.com/obras-destacadas/"
-              position="20.00 2.05 22.94" rotation="0 -90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 30; subtitulo: Grupo 5; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-
-    <!-- ========================================================= -->
-    <!-- SECCIÓN: GRUPO 6 - MURO DE CIERRE PERPENDICULAR (Obras 31 al 33) -->
-    <!-- ========================================================= -->
-
-    <!-- OBRA 31 -->
-    <a-entity id="grupo-6-obra-31"
-              obra-interactiva="titulo: Título de Obra 31; desc: Descripción del cuadro 31; link: https://galerianebulosa.com/obras-destacadas/"
-              position="17.70 2.05 24.94" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 31; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 32 -->
-    <a-entity id="grupo-6-obra-32"
-              obra-interactiva="titulo: Título de Obra 32; desc: Descripción del cuadro 32; link: https://galerianebulosa.com/obras-destacadas/"
-              position="14.90 2.05 24.99" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 32; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 33 -->
-    <a-entity id="grupo-6-obra-33"
-              obra-interactiva="titulo: Título de Obra 33; desc: Descripción del cuadro 33; link: https://galerianebulosa.com/obras-destacadas/"
-              position="12.10 2.05 24.95" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 33; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-
-    <!-- ========================================================= -->
-    <!-- SECCIÓN: GRUPO 7 - PAREDES EN "L" (Obras 34 al 48)        -->
-    <!-- ========================================================= -->
-
-    <!-- OBRA 34 -->
-    <a-entity id="grupo-7-obra-34"
-              obra-interactiva="titulo: Título de Obra 34; desc: Descripción del cuadro 34; link: https://galerianebulosa.com/obras-destacadas/"
-              position="10.26 2.13 22.93" rotation="0 90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 34; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 35 -->
-    <a-entity id="grupo-7-obra-35"
-              obra-interactiva="titulo: Título de Obra 35; desc: Descripción del cuadro 35; link: https://galerianebulosa.com/obras-destacadas/"
-              position="10.15 2.05 20.04" rotation="0 90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 35; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 36 -->
-    <a-entity id="grupo-7-obra-36"
-              obra-interactiva="titulo: Título de Obra 36; desc: Descripción del cuadro 36; link: https://galerianebulosa.com/obras-destacadas/"
-              position="9.98 2.05 17.06" rotation="0 90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 36; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 37 -->
-    <a-entity id="grupo-7-obra-37"
-              obra-interactiva="titulo: Título de Obra 37; desc: Descripción del cuadro 37; link: https://galerianebulosa.com/obras-destacadas/"
-              position="8.34 2.05 15.03" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 37; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 38 -->
-    <a-entity id="grupo-7-obra-38"
-              obra-interactiva="titulo: Título de Obra 38; desc: Descripción del cuadro 38; link: https://galerianebulosa.com/obras-destacadas/"
-              position="5.14 2.05 14.96" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 38; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 39 -->
-    <a-entity id="grupo-7-obra-39"
-              obra-interactiva="titulo: Título de Obra 39; desc: Descripción del cuadro 39; link: https://galerianebulosa.com/obras-destacadas/"
-              position="1.90 2.05 14.90" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 39; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 40 -->
-    <a-entity id="grupo-7-obra-40"
-              obra-interactiva="titulo: Título de Obra 40; desc: Descripción del cuadro 40; link: https://galerianebulosa.com/obras-destacadas/"
-              position="0.01 2.05 13.20" rotation="0 90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 40; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 41 -->
-    <a-entity id="grupo-7-obra-41"
-              obra-interactiva="titulo: Título de Obra 41; desc: Descripción del cuadro 41; link: https://galerianebulosa.com/obras-destacadas/"
-              position="0.01 2.05 10.19" rotation="0 90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 41; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 42 -->
-    <a-entity id="grupo-7-obra-42"
-              obra-interactiva="titulo: Título de Obra 42; desc: Descripción del cuadro 42; link: https://galerianebulosa.com/obras-destacadas/"
-              position="0.01 2.05 7.16" rotation="0 90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 42; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 43 -->
-    <a-entity id="grupo-7-obra-43"
-              obra-interactiva="titulo: Título de Obra 43; desc: Descripción del cuadro 43; link: https://galerianebulosa.com/obras-destacadas/"
-              position="1.63 2.05 5.03" rotation="0 0 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 43; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 44 -->
-    <a-entity id="grupo-7-obra-44"
-              obra-interactiva="titulo: Título de Obra 44; desc: Descripción del cuadro 44; link: https://galerianebulosa.com/obras-destacadas/"
-              position="4.96 2.05 5.03" rotation="0 0 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 44; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 45 -->
-    <a-entity id="grupo-7-obra-45"
-              obra-interactiva="titulo: Título de Obra 45; desc: Descripción del cuadro 45; link: https://galerianebulosa.com/obras-destacadas/"
-              position="8.23 2.05 5.03" rotation="0 0 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 45; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 46 -->
-    <a-entity id="grupo-7-obra-46"
-              obra-interactiva="titulo: Título de Obra 46; desc: Descripción del cuadro 46; link: https://galerianebulosa.com/obras-destacadas/"
-              position="10.23 2.05 3.14" rotation="0 90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 46; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 47 -->
-    <a-entity id="grupo-7-obra-47"
-              obra-interactiva="titulo: Título de Obra 47; desc: Descripción del cuadro 47; link: https://galerianebulosa.com/obras-destacadas/"
-              position="10.23 2.05 0.01" rotation="0 90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 47; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 48 -->
-    <a-entity id="grupo-7-obra-48"
-              obra-interactiva="titulo: Título de Obra 48; desc: Descripción del cuadro 48; link: https://galerianebulosa.com/obras-destacadas/"
-              position="10.23 2.05 -3.13" rotation="0 90 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 48; subtitulo: Grupo 7; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-
-    <!-- ========================================================= -->
-    <!-- SECCIÓN: GRUPO 8 - PARED PRINCIPAL DEL PASILLO (Obras 49 al 58) -->
-    <!-- ========================================================= -->
-
-    <!-- OBRA 49 -->
-    <a-entity id="grupo-8-obra-49"
-              obra-interactiva="titulo: Título de Obra 49; desc: Descripción del cuadro 49; link: https://galerianebulosa.com/obras-destacadas/"
-              position="8.46 2.05 -5.00" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 49; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 50 -->
-    <a-entity id="grupo-8-obra-50"
-              obra-interactiva="titulo: Título de Obra 50; desc: Descripción del cuadro 50; link: https://galerianebulosa.com/obras-destacadas/"
-              position="5.66 2.05 -5.01" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 50; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 51 -->
-    <a-entity id="grupo-8-obra-51"
-              obra-interactiva="titulo: Título de Obra 51; desc: Descripción del cuadro 51; link: https://galerianebulosa.com/obras-destacadas/"
-              position="2.80 2.05 -5.00" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 51; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 52 -->
-    <a-entity id="grupo-8-obra-52"
-              obra-interactiva="titulo: Título de Obra 52; desc: Descripción del cuadro 52; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-0.04 2.05 -5.08" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 52; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 53 -->
-    <a-entity id="grupo-8-obra-53"
-              obra-interactiva="titulo: Título de Obra 53; desc: Descripción del cuadro 53; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-2.85 2.05 -5.00" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 53; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 54 -->
-    <a-entity id="grupo-8-obra-54"
-              obra-interactiva="titulo: Título de Obra 54; desc: Descripción del cuadro 54; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-5.68 2.05 -4.97" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 54; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 55 -->
-    <a-entity id="grupo-8-obra-55"
-              obra-interactiva="titulo: Título de Obra 55; desc: Descripción del cuadro 55; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-8.51 2.05 -4.97" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 55; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 56 -->
-    <a-entity id="grupo-8-obra-56"
-              obra-interactiva="titulo: Título de Obra 56; desc: Descripción del cuadro 56; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-11.36 2.06 -5.08" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 56; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 57 -->
-    <a-entity id="grupo-8-obra-57"
-              obra-interactiva="titulo: Título de Obra 57; desc: Descripción del cuadro 57; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-14.14 2.05 -5.01" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 57; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 58 -->
-    <a-entity id="grupo-8-obra-58"
-              obra-interactiva="titulo: Título de Obra 58; desc: Descripción del cuadro 58; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-16.94 2.05 -5.01" rotation="0 180 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 58; subtitulo: Grupo 8; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-
-    <!-- ========================================================= -->
-    <!-- SECCIÓN: GRUPO 9 - PARED TESTERA DEL PASILLO (Obras 59 al 61) -->
-    <!-- ========================================================= -->
-
-    <!-- OBRA 59 -->
-    <a-entity id="grupo-9-obra-59"
-              obra-interactiva="titulo: Título de Obra 59; desc: Descripción del cuadro 59; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-17.63 2.05 -15.03" rotation="0 0 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 59; subtitulo: Grupo 9; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Burbuja-rota-El-despertar-del-fenix-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 60 -->
-    <a-entity id="grupo-9-obra-60"
-              obra-interactiva="titulo: Título de Obra 60; desc: Descripción del cuadro 60; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-14.93 2.05 -15.03" rotation="0 0 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 60; subtitulo: Grupo 9; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
-      </a-plane>
-    </a-entity>
-
-    <!-- OBRA 61 -->
-    <a-entity id="grupo-9-obra-61"
-              obra-interactiva="titulo: Título de Obra 61; desc: Descripción del cuadro 61; link: https://galerianebulosa.com/obras-destacadas/"
-              position="-12.23 2.05 -15.03" rotation="0 0 0">
-      <a-box width="2.5" height="1.8" depth="0.08" color="#0e0c18" material="roughness: 0.3; metalness: 0.2"></a-box>
-      <a-plane position="0 0 0.052" width="2.35" height="1.65"
-               lienzo-obra="titulo: OBRA 61; subtitulo: Grupo 9; src: https://galerianebulosa.com/wp-content/uploads/2026/10/El-juicio-del-dragon-azul-con-menos-resolucion.png;">
+               lienzo-obra="titulo: OBRA 24; subtitulo: Grupo 6; src: https://galerianebulosa.com/wp-content/uploads/2026/10/Umbral-de-esperanza-con-menos-resolucion.png;">
       </a-plane>
     </a-entity>
 
@@ -2371,7 +1472,7 @@
       <a-box width="3.90" height="2.30" depth="0.09" color="#0f0c18" material="roughness: 0.3; metalness: 0.6"></a-box>
       <a-box width="3.74" height="2.14" depth="0.095" color="#9333ea" material="roughness: 0.2; emissive: #7c3aed; emissiveIntensity: 0.35"></a-box>
       <a-plane position="0 0 0.055" width="3.60" height="2.025"
-               pantalla-youtube="videoId: 4HOu4_57T1U; titulo: Video de Presentación;">
+               pantalla-youtube="videoId: GZRF6dSq7tk; titulo: Video de Presentación;">
       </a-plane>
     </a-entity>
 
