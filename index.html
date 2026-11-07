@@ -298,7 +298,7 @@
       }
     }
 
-    /* GUÍA DE NAVEGACIÓN Y BOTONES EN PANTALLA */
+    /* GUÍA DE NAVEGACIÓN Y BOTONES EN PANTALLA (CON FLECHA MINIMIZADORA) */
     #nav-guide {
       position: fixed;
       top: 50%;
@@ -318,6 +318,42 @@
       gap: 10px;
       user-select: none;
       cursor: default !important;
+      transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease;
+    }
+
+    #nav-guide.minimized {
+      transform: translateY(-50%) translateX(calc(100% + 35px));
+      opacity: 0.95;
+    }
+
+    /* Botón estético de la flechita para minimizar/desplegar */
+    #btn-toggle-nav-guide {
+      position: absolute;
+      top: 50%;
+      left: -28px;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 48px;
+      background: linear-gradient(135deg, rgba(30, 20, 50, 0.95), rgba(20, 14, 35, 0.95));
+      border: 1px solid rgba(192, 132, 252, 0.45);
+      border-right: none;
+      border-radius: 10px 0 0 10px;
+      color: #c084fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer !important;
+      font-size: 11px;
+      box-shadow: -4px 4px 14px rgba(0, 0, 0, 0.5);
+      transition: all 0.25s ease;
+      z-index: 10000000;
+      padding: 0;
+    }
+    #btn-toggle-nav-guide:hover {
+      background: rgba(168, 85, 247, 0.85);
+      color: #ffffff;
+      width: 29px;
+      left: -31px;
     }
 
     .guide-title {
@@ -420,6 +456,17 @@
   </style>
 
   <script>
+    // Función para minimizar/desplegar el panel de navegación lateral
+    function alternarNavGuide() {
+      const panel = document.getElementById('nav-guide');
+      const btn = document.getElementById('btn-toggle-nav-guide');
+      if (!panel || !btn) return;
+      panel.classList.toggle('minimized');
+      const estaMinimizado = panel.classList.contains('minimized');
+      btn.innerHTML = estaMinimizado ? '◀' : '▶';
+      btn.title = estaMinimizado ? 'Mostrar panel de navegación' : 'Minimizar panel';
+    }
+
     function abrirModalObra(titulo, desc, link) {
       document.getElementById('artwork-modal-title').textContent = titulo || 'Obra';
       document.getElementById('artwork-modal-desc').textContent = desc || 'Descripción disponible próximamente.';
@@ -510,12 +557,12 @@
     }
 
     // =========================================================================
-    // DELIMITADOR PERIMETRAL DE SEGURIDAD (evita salir de la galería en cualquier circunstancia)
+    // DELIMITADOR PERIMETRAL DE SEGURIDAD (evita salir de la galería)
     // =========================================================================
     function esDentroDeLaGaleria(x, z) {
       // Zona 1: Sala de los Trofeos (Obras 1 a 9)
       const enTrofeos = (x >= -10.1 && x <= 0.2 && z >= -25.2 && z <= -14.5);
-      // Zona 2: Pasillo Principal completo (de TV exterior a -19.7 hasta el fondo a +19.8)
+      // Zona 2: Pasillo Principal completo
       const enPasillo = (x >= -20.1 && x <= 20.1 && z >= -15.2 && z <= -4.8);
       // Zona 3: Ala derecha y corredores en L (Obras 10 a 48)
       const enAlaDerecha = (x >= -0.2 && x <= 20.1 && z >= -5.2 && z <= 25.2);
@@ -523,17 +570,22 @@
     }
 
     // =========================================================================
-    // COLISIÓN CON LAS PAREDES (el jugador no puede salir de la galería)
+    // COLISIÓN CON LOS PEDESTALES DE LOS TROFEOS (para que no se atraviesen)
     // =========================================================================
-    // ==CORE-START==
-    // -----------------------------------------------------------------------
-    // MAPA DE COLISIÓN (no depende de nombres de objetos ni de raycasting)
-    //  - Lee TODOS los triángulos del modelo de la sala en coordenadas del mundo.
-    //  - PISO: detecta el nivel del suelo y marca por dónde se puede caminar.
-    //  - MUROS: corta la geometría a varias alturas del cuerpo y marca todo lo sólido.
-    //  - Solo se puede estar donde hay piso, no hay nada sólido y se conecta con el
-    //    punto de inicio. Así es imposible "salirse" aunque cambie el modelo.
-    // -----------------------------------------------------------------------
+    function colisionaConTrofeos(x, z) {
+      if (enLaNebulosa) return false;
+      // Trofeo 1.er Lugar (Oro): centro (-9.04, -14.96)
+      if (x >= -10.15 && x <= -7.95 && z >= -16.05 && z <= -13.85) return true;
+      // Trofeo 2.º Lugar (Plata): centro (-0.75, -15.58)
+      if (x >= -1.75 && x <= 0.25 && z >= -16.65 && z <= -14.50) return true;
+      // Trofeo 3.er Lugar (Bronce): centro (-8.66, -23.78)
+      if (x >= -9.60 && x <= -7.70 && z >= -24.85 && z <= -22.70) return true;
+      return false;
+    }
+
+    // =========================================================================
+    // COLISIÓN CON LAS PAREDES Y OBJETIVOS
+    // =========================================================================
     function crearMapaColision(tris, opt) {
       opt = opt || {};
       var ojoY = opt.ojoY != null ? opt.ojoY : 2.05;
@@ -543,8 +595,6 @@
       if (n === 0) return { activo: false, motivo: 'el modelo no tiene geometría', info: info };
 
       var i, j, o;
-
-      // ---- 1) Nivel del piso: la superficie horizontal que hay justo bajo el punto de inicio
       var hist = {};
       var yTope = ojoY - 0.6;
       var bajoPies = -Infinity;
@@ -598,7 +648,6 @@
       }
       info.pisoY = Math.round(pisoY * 100) / 100;
 
-      // ---- Rejilla 2D: solo con la geometría que está a la altura del cuerpo
       var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
       var yBajo = pisoY - 0.2, yAlto = pisoY + 2.2;
       for (i = 0; i < n; i++) {
@@ -624,7 +673,6 @@
       var muro = new Uint8Array(W * H);
       info.celdaM = Math.round(CELDA * 100) / 100;
 
-      // ---- 2) Muros: cortes horizontales a varias alturas del cuerpo
       var alturas = [0.35, 0.8, 1.25, 1.7];
       var s, hh, pts, t, ix, iz, steps, sx, sz, L;
       var marcarSegmento = function (x1, z1, x2, z2) {
@@ -665,7 +713,6 @@
           }
           if (contado) nMuros++;
         } else if (cosY > 0.95) {
-          // ---- 3) Piso: triángulos horizontales a la altura del suelo
           var ym = (ay + by + cy) / 3;
           if (Math.abs(ym - pisoY) < 0.12) {
             var x0 = Math.min(ax, bx, cx), x1 = Math.max(ax, bx, cx);
@@ -703,7 +750,6 @@
       info.trianguloPiso = nPiso;
       info.pisoDetectado = pisoDetectado && celdasPiso >= 400;
 
-      // ---- 4) Elegir la configuración más estricta que deje caminar desde el inicio
       var offsCache = {};
       var offsets = function (r) {
         var key = r.toFixed(3);
@@ -778,14 +824,13 @@
       info.zonaAbierta = elegido.res.toca;
 
       var permitido = function (x, z) {
-        // Barrera perimetral infranqueable
         if (!esDentroDeLaGaleria(x, z)) return false;
+        if (colisionaConTrofeos(x, z)) return false;
         var ix2 = Math.floor((x - minX) / CELDA), iz2 = Math.floor((z - minZ) / CELDA);
         if (ix2 < 0 || iz2 < 0 || ix2 >= W || iz2 >= H) return false;
         return cfg.alc[iz2 * W + ix2] === 1;
       };
 
-      // Mueve de (x0,z0) a (x1,z1) en pasitos; si choca, se desliza por la pared
       var mover = function (x0, z0, x1, z1) {
         var dx = x1 - x0, dz = z1 - z0;
         var dist = Math.sqrt(dx * dx + dz * dz);
@@ -803,10 +848,7 @@
 
       return { activo: true, permitido: permitido, mover: mover, info: info };
     }
-    // ==CORE-END==
 
-    // SYSTEM: Se ejecuta en cada fotograma DESPUÉS de todos los components (incluyendo movement-controls)
-    // y ANTES de que Three.js renderice el cuadro en la pantalla.
     AFRAME.registerSystem('colision-paredes', {
       init: function () {
         this.comp = null;
@@ -828,9 +870,7 @@
         this.prev = new THREE.Vector3().copy(p);
         this.bueno = new THREE.Vector3().copy(p);
         this.cuadros = 0;
-        window.colisionEstado = 'esperando el modelo de la sala';
 
-        // Asegurar que la cámara hija no mueva su posición relativa con WASD
         this.camEl = this.el.querySelector('a-camera') || this.el.querySelector('[camera]');
         if (this.camEl) {
           this.camEl.setAttribute('wasd-controls', 'enabled: false');
@@ -843,7 +883,6 @@
         }
       },
 
-      // Lee todos los triángulos del modelo de la sala (en coordenadas del mundo)
       construir: function () {
         const roomEl = document.querySelector('[gltf-model="#modelo-sala"]');
         if (!roomEl) return false;
@@ -878,45 +917,32 @@
           const ojoY = this.el.object3D.position.y || 2.05;
           this.mapa = crearMapaColision(tris, { ojoY: ojoY, inicio: this.inicio });
         } catch (err) {
-          console.warn('[Colisión] error al preparar las paredes:', err);
           this.mapa = { activo: false, motivo: String(err) };
         }
 
         this.listo = true;
-        if (this.mapa.activo) {
-          window.colisionEstado = 'activa';
-          window.colisionInfo = this.mapa.info;
-          console.info('[Colisión] activa', this.mapa.info);
-        } else {
-          window.colisionEstado = 'desactivada: ' + this.mapa.motivo;
-          console.warn('[Colisión] desactivada:', this.mapa.motivo, this.mapa.info || '');
-        }
         return true;
       },
 
-      // Frena en las paredes antes del renderizado
       corregir: function () {
         const p = this.el.object3D.position;
 
-        // Mantener la cámara interna fija en (0,0,0) del rig
         if (this.camEl && this.camEl.object3D) {
           this.camEl.object3D.position.set(0, 0, 0);
         }
 
-        // En el mirador exterior de la nebulosa no hay muros que restrinjan
         if (enLaNebulosa) {
           this.prev.copy(p);
           return;
         }
 
-        // Si el modelo aún no termina de cargar, aplicar bloqueo perimetral de inmediato
         if (!this.listo) {
           this.construir();
           if (!this.listo) {
             p.y = 2.05;
-            if (!esDentroDeLaGaleria(p.x, this.prev.z)) p.x = this.prev.x;
-            if (!esDentroDeLaGaleria(p.x, p.z)) p.z = this.prev.z;
-            if (!esDentroDeLaGaleria(p.x, p.z)) { p.x = this.bueno.x; p.z = this.bueno.z; }
+            if (!esDentroDeLaGaleria(p.x, this.prev.z) || colisionaConTrofeos(p.x, this.prev.z)) p.x = this.prev.x;
+            if (!esDentroDeLaGaleria(p.x, p.z) || colisionaConTrofeos(p.x, p.z)) p.z = this.prev.z;
+            if (!esDentroDeLaGaleria(p.x, p.z) || colisionaConTrofeos(p.x, p.z)) { p.x = this.bueno.x; p.z = this.bueno.z; }
             else { this.bueno.set(p.x, p.y, p.z); }
             this.prev.copy(p);
             return;
@@ -929,11 +955,10 @@
         const dz = p.z - this.prev.z;
         if (Math.abs(dx) < 0.000001 && Math.abs(dz) < 0.000001) return;
 
-        // Reubicación / Teletransporte (ej. al volver de la nebulosa)
         if (Math.sqrt(dx * dx + dz * dz) > 3.0) {
-          if (this.mapa && this.mapa.activo && this.mapa.permitido(p.x, p.z)) {
+          if (this.mapa && this.mapa.activo && this.mapa.permitido(p.x, p.z) && !colisionaConTrofeos(p.x, p.z)) {
             this.bueno.set(p.x, p.y, p.z);
-          } else if (esDentroDeLaGaleria(p.x, p.z)) {
+          } else if (esDentroDeLaGaleria(p.x, p.z) && !colisionaConTrofeos(p.x, p.z)) {
             this.bueno.set(p.x, p.y, p.z);
           } else {
             p.x = this.bueno.x;
@@ -943,23 +968,21 @@
           return;
         }
 
-        // Avance normal por teclado (WASD/flechas) o botones en pantalla
         if (this.mapa && this.mapa.activo) {
           const r = this.mapa.mover(this.prev.x, this.prev.z, p.x, p.z);
           p.x = r.x;
           p.z = r.z;
 
-          if (this.mapa.permitido(p.x, p.z)) {
+          if (this.mapa.permitido(p.x, p.z) && !colisionaConTrofeos(p.x, p.z)) {
             this.bueno.set(p.x, p.y, p.z);
           } else {
             p.x = this.bueno.x;
             p.z = this.bueno.z;
           }
         } else {
-          // Bloqueo perimetral fallback
-          if (!esDentroDeLaGaleria(p.x, this.prev.z)) p.x = this.prev.x;
-          if (!esDentroDeLaGaleria(p.x, p.z)) p.z = this.prev.z;
-          if (!esDentroDeLaGaleria(p.x, p.z)) { p.x = this.bueno.x; p.z = this.bueno.z; }
+          if (!esDentroDeLaGaleria(p.x, this.prev.z) || colisionaConTrofeos(p.x, this.prev.z)) p.x = this.prev.x;
+          if (!esDentroDeLaGaleria(p.x, p.z) || colisionaConTrofeos(p.x, p.z)) p.z = this.prev.z;
+          if (!esDentroDeLaGaleria(p.x, p.z) || colisionaConTrofeos(p.x, p.z)) { p.x = this.bueno.x; p.z = this.bueno.z; }
           else { this.bueno.set(p.x, p.y, p.z); }
         }
 
@@ -972,7 +995,7 @@
     });
 
     // =========================================================================
-    // VISOR 3D FLOTANTE DE PREMIACIÓN (CLONA DIRECTO EL MODELO DE LA SALA)
+    // VISOR 3D FLOTANTE DE PREMIACIÓN
     // =========================================================================
     let tScene, tCamera, tRenderer, tCurrentModel, tAnimId, tStageGroup;
     let tIsDragging = false, tPrevX = 0;
@@ -1063,7 +1086,6 @@
       rim.position.set(-4, 3, -3);
       tScene.add(rim);
 
-      // Pedestal circular estático
       tStageGroup = new THREE.Group();
       
       const stageGeo = new THREE.CylinderGeometry(1.5, 1.7, 0.22, 48);
@@ -1150,12 +1172,11 @@
     function animarVisorTrofeo() {
       tAnimId = requestAnimationFrame(animarVisorTrofeo);
       if (tCurrentModel && !tIsDragging) {
-        tCurrentModel.rotation.y += 0.008; // Solo el trofeo gira
+        tCurrentModel.rotation.y += 0.008;
       }
       tRenderer.render(tScene, tCamera);
     }
 
-    // Componente interactivo para hacer clic en el trofeo
     AFRAME.registerComponent('trofeo-premiacion', {
       schema: { lugar: { type: 'string', default: 'gold' } },
       init: function () {
@@ -1592,17 +1613,15 @@
     </div>
   </div>
 
-  <!-- VISOR 3D FLOTANTE DE PREMIACIÓN (CON FONDO CÓSMICO Y PEDESTAL FIJO) -->
+  <!-- VISOR 3D FLOTANTE DE PREMIACIÓN -->
   <div id="trofeo-viewer-overlay" onclick="if(event.target === this) cerrarModalTrofeo()">
     <div id="trofeo-viewer-container">
       <button id="trofeo-viewer-close" onclick="cerrarModalTrofeo()" title="Cerrar">✕</button>
       
-      <!-- Lado izquierdo: Video de nebulosa como fondo exclusivo (carga diferida sin consumo previo) -->
       <div id="trofeo-viewer-canvas-wrap">
         <video id="trofeo-bg-video" src="nebulosa.mp4" preload="none" loop muted playsinline></video>
       </div>
 
-      <!-- Lado derecho: Tarjeta de Honor legible con fondo oscuro y Poppins -->
       <div id="trofeo-viewer-card">
         <span id="trofeo-viewer-badge" style="display: inline-block; align-self: flex-start; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px;">
           ★ PRIMER LUGAR (ORO)
@@ -1621,9 +1640,16 @@
     </div>
   </div>
 
-  <!-- GUÍA DE NAVEGACIÓN Y BOTONES EN PANTALLA -->
+  <!-- GUÍA DE NAVEGACIÓN Y BOTONES EN PANTALLA (CON FLECHITA MINIMIZADORA) -->
   <div id="nav-guide">
-    <div class="guide-title">Navegación</div>
+    <button id="btn-toggle-nav-guide" onclick="alternarNavGuide()" title="Minimizar / Mostrar panel de navegación">
+      ▶
+    </button>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+      <div class="guide-title">Navegación</div>
+      <button onclick="alternarNavGuide()" title="Minimizar panel" style="background: none; border: none; color: #a855f7; cursor: pointer; font-size: 11px; padding: 0 2px;">✕</button>
+    </div>
     
     <div class="arrow-pad">
       <div class="key-cap" onclick="moverConBoton('ArrowUp')">↑</div>
@@ -1648,7 +1674,7 @@
     <button id="btn-toggle-nebulosa" onclick="alternarNebulosa()">🌌 Salir a la Nebulosa</button>
   </div>
 
-  <!-- ESCENA PÚBLICA (CARGA INMEDIATA SIN BLOQUEO) -->
+  <!-- ESCENA PÚBLICA -->
   <a-scene 
     video-handler
     loading-screen="enabled: false;"
@@ -1656,7 +1682,6 @@
     raycaster="objects: .clickable;"
     renderer="logarithmicDepthBuffer: true; colorManagement: true; physicallyCorrectLights: true; exposure: 1.0; toneMapping: ACESFilmic;">
 
-    <!-- timeout="100": No retiene la pantalla en negro si los videos tardan en responder -->
     <a-assets timeout="100">
       <a-asset-item id="modelo-sala" src="galeria.glb"></a-asset-item>
       
@@ -1792,7 +1817,7 @@
       </a-plane>
     </a-entity>
 
-    <!-- OBRA 8 (Homologada al tamaño estándar 2.5 x 1.8) -->
+    <!-- OBRA 8 -->
     <a-entity id="grupo-3-obra-8"
               obra-interactiva="titulo: Título de Obra 8; desc: Descripción de la pieza central de honor.; link: https://galerianebulosa.com/obras-destacadas/"
               position="-4.94 2.05 -24.89" rotation="0 0 0">
@@ -2377,7 +2402,7 @@
 
 
     <!-- ========================================================================= -->
-    <!-- TROFEOS DE LOS GANADORES EN LA SALA (CLIC DIRECTO ABRE VISOR 3D FLOTANTE)-->
+    <!-- TROFEOS DE LOS GANADORES EN LA SALA                                       -->
     <!-- ========================================================================= -->
 
     <!-- TROFEO 1.ER LUGAR (ORO) -->
@@ -2404,7 +2429,7 @@
       <a-box class="clickable" trofeo-premiacion="lugar: silver" position="0 0.9 0" width="1.6" height="2.2" depth="1.6" material="opacity: 0; transparent: true"></a-box>
     </a-entity>
 
-    <!-- TROFEO 3.ER LUGAR (BRONCE - COORDENADAS EXACTAS DE TU CAPTURA) -->
+    <!-- TROFEO 3.ER LUGAR (BRONCE) -->
     <a-entity id="trofeo-tercer-lugar"
               class="clickable"
               gltf-model="#trofeo-bronce"
@@ -2418,7 +2443,7 @@
 
 
     <!-- ========================================================= -->
-    <!-- CÁMARA CON FRENO ABSOLUTO CONTRA PAREDES DE BLENDER        -->
+    <!-- CÁMARA CON FRENO CONTRA PAREDES Y TROFEOS                  -->
     <!-- ========================================================= -->
     <a-entity id="rig" 
               colision-paredes
